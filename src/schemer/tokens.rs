@@ -15,10 +15,10 @@ pub enum SpecialToken {
     TypeInteger, // interger
     TypeFloating, // floating
     TypeBoolean, // boolean
-    TypeObject, // object    
+    TypeObject, // object
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Token {
     None, 
     Ident(String),

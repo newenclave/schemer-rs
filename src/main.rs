@@ -3,7 +3,7 @@
 mod schemer;
 use schemer::lexer::Lexer;
 use schemer::parser::Parser;
-use schemer::tokens::Token;
+use schemer::tokens::{Token, SpecialToken};
 
 fn main() {
 
@@ -16,7 +16,7 @@ fn main() {
     let lex = Lexer::new();
     let vec = lex.run(&val);
 
-    let mut pars = Parser::new([].to_vec());
+    let mut pars = Parser::new(Vec::new());
 
     match &vec {
         Err(expr) => println!("Fail! {}", expr),
@@ -29,6 +29,12 @@ fn main() {
         pars.advance();
         if pars.expect(&Token::is_ident()) {
             println!("found! {}", pars.current().to_string())
+        }
+        if pars.expect(&Token::is_special(SpecialToken::LBrace)) {
+            println!("{}", pars.current().to_string())
+        }
+        if pars.expect(&Token::is_special(SpecialToken::RBrace)) {
+            println!("{}", pars.current().to_string())
         }
     }
 }
