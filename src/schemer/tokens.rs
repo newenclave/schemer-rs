@@ -11,6 +11,8 @@ pub enum SpecialToken {
     LBracket, // [
     RBracket, // ]
 
+    Equal, // =
+
     TypeString, // string
     TypeInteger, // interger
     TypeFloating, // floating
@@ -107,6 +109,7 @@ impl TokenInfo {
                 SpecialToken::RBrace => "}".to_string(),
                 SpecialToken::LBracket => "[".to_string(),
                 SpecialToken::RBracket => "]".to_string(),
+                SpecialToken::Equal => "=".to_string(),
                 SpecialToken::TypeString => "string".to_string(),
                 SpecialToken::TypeInteger => "integer".to_string(),
                 SpecialToken::TypeFloating => "floating".to_string(),
