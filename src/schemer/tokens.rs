@@ -36,6 +36,18 @@ impl Token {
             _ => false
         }
     }
+    pub fn is_floating() -> impl Fn(&Token) -> bool {
+        |tok: &Token| match tok {
+            Token::Floating(_) => true,
+            _ => false
+        }
+    }
+    pub fn is_integer() -> impl Fn(&Token) -> bool {
+        |tok: &Token| match tok {
+            Token::Integer(_) => true,
+            _ => false
+        }
+    }
     pub fn is_number() -> impl Fn(&Token) -> bool {
         |tok: &Token| match tok {
             Token::Integer(_) => true,
