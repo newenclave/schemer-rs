@@ -17,7 +17,7 @@ impl<T> Trie<T> {
         }
     }
 
-    pub fn get<'a, 'b>(&'a self, data: &'b mut StrScanner) -> Option<(&T, usize)> {
+    pub fn get<'a, 'b>(&'a self, data: &'b mut StrScanner) -> Option<(&'a T, usize)> {
         let mut root = self;
         let mut last: Option<&T> = None;
         let mut last_shift: usize = 0;
