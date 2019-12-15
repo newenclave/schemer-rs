@@ -75,6 +75,11 @@ impl Parser {
             self.next().position().0, self.next().position().1, exp);
     }
 
+    fn panic_current(&self, exp: &str) {
+        panic!("current '{}' at {}:{}. {}", self.current().to_string(), 
+            self.current().position().0, self.current().position().1, exp);
+    }
+
     pub fn expect<F: Fn(&Token) -> bool>(&mut self, call: &F) -> bool {
         if call(self.next().token()) {
             self.advance();
@@ -84,12 +89,17 @@ impl Parser {
         }
     }
 
-    fn try_parse_str_array(&mut self) -> Vec<String> {
+    fn try_parse_str_array(&mut self, test_for: &StringType) -> Vec<String> {
         let mut res: Vec<String> = Vec::new();
 
         while self.expect(&Token::is_string()) {
             match self.current().token() {
-                Token::String(val) => res.push(val.to_string()),
+                Token::String(val) => {
+                    if !test_for.check_enum(val) {
+                        self.panic_current(&format!("Value '{}' is not valis for enum.", val));
+                    }
+                    res.push(val.to_string())
+                },
                 _ => ()
             }
             self.expect(&Token::is_special(SpecialToken::Comma));
@@ -122,16 +132,88 @@ impl Parser {
                     self.panic_expect("string");
                 }
                 match self.current().token() {
-                    Token::String(value) => result.add_value(value),
+                    Token::String(value) => {
+                        if !result.check_enum(value) {
+                            self.panic_current(&format!("Value '{}' is not valis for enum.", value));
+                        }
+                        result.add_value(value)
+                    },
                     _ => (),
                 }
             } else {
                 if !self.expect(&Token::is_special(SpecialToken::LBracket)) {
-                    self.panic_expect("]");
+                    self.panic_expect("[");
                 }
-                result.set_array(self.try_parse_str_array());
+                result.set_array(self.try_parse_str_array(&result));
             }
         }
         result
     }
+
+    fn try_parse_int_array(&mut self, check_for: &IntegerType) -> Vec<i64> {
+        let mut res: Vec<i64> = Vec::new();
+
+        while self.expect(&Token::is_integer()) {
+            match self.current().token() {
+                Token::Integer(val) => {
+                    if !check_for.check_enum(*val) {
+                        self.panic_current(&format!("Value {} is invalid for enum", *val));
+                    } else if !check_for.check_minmax(*val) {
+                        self.panic_current(&format!("Value {} is invalid for interval", *val));
+                    } else {
+                        res.push(*val)
+                    }
+                },
+                _ => ()
+            }
+            self.expect(&Token::is_special(SpecialToken::Comma));
+        }
+        if !self.expect(&Token::is_special(SpecialToken::RBracket)) {
+            self.panic_expect("]");
+        }
+        return res;
+    }
+
+    pub fn parse_integer(&mut self) -> IntegerType {
+        let mut result = IntegerType::new();
+
+        if self.expect(&Token::is_special(SpecialToken::LBracket)) {
+            if !self.expect(&Token::is_special(SpecialToken::RBracket)) {
+                self.panic_expect("]");
+            }
+            result.set_array(Vec::new());
+        }
+        if self.expect(&Token::is_ident()) {
+            match self.current().token() {
+                Token::Ident(value) => result.set_name(value),
+                _ => (),
+            }
+        }
+
+        if self.expect(&Token::is_special(SpecialToken::Equal)) {
+            if !result.is_array() {
+                if !self.expect(&Token::is_string()) {
+                    self.panic_expect("string");
+                }
+                match self.current().token() {
+                    Token::Integer(val) => {
+                        if !result.check_enum(*val) {
+                            self.panic_current(&format!("Value {} is invalid for enum", *val));
+                        } else if !result.check_minmax(*val) {
+                            self.panic_current(&format!("Value {} is invalid for interval", *val));
+                        } else {
+                            result.add_value(*val)
+                        }
+                    },
+                    _ => (),
+                }
+            } else {
+                if !self.expect(&Token::is_special(SpecialToken::LBracket)) {
+                    self.panic_expect("[");
+                }
+                result.set_array(self.try_parse_int_array(&result));
+            }
+        }
+        result
+    } 
 }

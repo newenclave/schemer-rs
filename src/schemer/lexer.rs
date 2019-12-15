@@ -176,6 +176,7 @@ impl Lexer {
 
         lex.add_special("=", SpecialToken::Equal);
         lex.add_special(",", SpecialToken::Comma);
+        lex.add_special("..", SpecialToken::Interval);
 
         lex.add_type("string", TypeName::TypeString);
         lex.add_type("integer", TypeName::TypeInteger);

@@ -9,7 +9,7 @@ use schemer::tokens::{Token, SpecialToken};
 fn main() {
 
     let val = "
-string[] data = [\"bla bla\", \"1\", \"2\"]        
+integer[] data = [1, 2, 3, 4]
     ".to_string();
     let lex = Lexer::new();
     let vec = lex.run(&val);
@@ -23,7 +23,7 @@ string[] data = [\"bla bla\", \"1\", \"2\"]
         },
     };
     
-    let sss = pars.parse_string();
+    let sss = pars.parse_integer();
 
     println!("{}", sss.to_string());
 

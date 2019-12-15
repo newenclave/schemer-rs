@@ -13,6 +13,8 @@ pub enum SpecialToken {
 
     Equal, // =
     Comma, // =
+
+    Interval, // ..
 }
 
 #[derive(Clone, PartialEq)]
@@ -135,6 +137,7 @@ impl TokenInfo {
                 SpecialToken::RBracket => "]".to_string(),
                 SpecialToken::Equal => "=".to_string(),
                 SpecialToken::Comma => ",".to_string(),
+                SpecialToken::Interval => "..".to_string(),
             },
             Token::Eof => "eof".to_string(),
         }
