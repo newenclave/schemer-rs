@@ -3,7 +3,7 @@
 use std::fmt;
 use super::trie::Trie as Trie;
 use super::scanner::Scanner as Scanner;
-use super::tokens::{TokenInfo, Token, SpecialToken};
+use super::tokens::{TokenInfo, Token, SpecialToken, TypeName};
 
 struct TokenPack<T> {
     value: T,
@@ -167,23 +167,31 @@ impl Lexer {
             trie: Trie::new()
         };
 
-        lex.add("(", SpecialToken::LParen);
-        lex.add(")", SpecialToken::RParen);
-        lex.add("{", SpecialToken::LBrace);
-        lex.add("}", SpecialToken::RBrace);
-        lex.add("[", SpecialToken::LBracket);
-        lex.add("]", SpecialToken::RBracket);
+        lex.add_special("(", SpecialToken::LParen);
+        lex.add_special(")", SpecialToken::RParen);
+        lex.add_special("{", SpecialToken::LBrace);
+        lex.add_special("}", SpecialToken::RBrace);
+        lex.add_special("[", SpecialToken::LBracket);
+        lex.add_special("]", SpecialToken::RBracket);
 
-        lex.add("string", SpecialToken::TypeString);
-        lex.add("integer", SpecialToken::TypeInteger);
-        lex.add("floating", SpecialToken::TypeFloating);
-        lex.add("boolean", SpecialToken::TypeBoolean);
-        lex.add("object", SpecialToken::TypeObject);
+        lex.add_special("=", SpecialToken::Equal);
+        lex.add_special(",", SpecialToken::Comma);
+
+        lex.add_type("string", TypeName::TypeString);
+        lex.add_type("integer", TypeName::TypeInteger);
+        lex.add_type("floating", TypeName::TypeFloating);
+        lex.add_type("boolean", TypeName::TypeBoolean);
+        lex.add_type("object", TypeName::TypeObject);
         
         return lex;
     }
 
-    fn add(&mut self, key: &str, value: SpecialToken) {
+    fn add_type(&mut self, key: &str, value: TypeName) {
+        let ident = is_ident_string(key);
+        self.trie.set(key, TokenPack::new(Token::Type(value), ident));
+    }
+
+    fn add_special(&mut self, key: &str, value: SpecialToken) {
         let ident = is_ident_string(key);
         self.trie.set(key, TokenPack::new(Token::Special(value), ident));
     }

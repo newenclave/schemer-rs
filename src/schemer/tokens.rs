@@ -12,7 +12,11 @@ pub enum SpecialToken {
     RBracket, // ]
 
     Equal, // =
+    Comma, // =
+}
 
+#[derive(Clone, PartialEq)]
+pub enum TypeName {
     TypeString, // string
     TypeInteger, // interger
     TypeFloating, // floating
@@ -27,6 +31,7 @@ pub enum Token {
     Integer(i64),
     Floating(f64),
     String(String),
+    Type(TypeName),
     Special(SpecialToken),
     Eof,
 }
@@ -63,11 +68,23 @@ impl Token {
             _ => false
         }
     }
+    pub fn is_eof() -> impl Fn(&Token) -> bool {
+        |tok: &Token| match tok {
+            Token::Eof => true,
+            _ => false
+        }
+    }
     pub fn is_special(val: SpecialToken) -> impl Fn(&Token) -> bool {
         move |tok: &Token| match tok {
             Token::Special(s) => {
                 *s == val
             },
+            _ => false
+        }
+    }
+    pub fn is_type() -> impl Fn(&Token) -> bool {
+        |tok: &Token| match tok {
+            Token::Type(t) => true,
             _ => false
         }
     }
@@ -102,6 +119,13 @@ impl TokenInfo {
             Token::Integer(i) => format!("{}", i),
             Token::Floating(f) => format!("{}", f),
             Token::String(s) => format!("\"{}\"", s),
+            Token::Type(t) => match t {
+                TypeName::TypeString => "string".to_string(),
+                TypeName::TypeInteger => "integer".to_string(),
+                TypeName::TypeFloating => "floating".to_string(),
+                TypeName::TypeBoolean => "boolean".to_string(),
+                TypeName::TypeObject => "object".to_string(),
+            }
             Token::Special(spec) => match spec { 
                 SpecialToken::LParen => "(".to_string(),
                 SpecialToken::RParen => ")".to_string(),
@@ -110,11 +134,7 @@ impl TokenInfo {
                 SpecialToken::LBracket => "[".to_string(),
                 SpecialToken::RBracket => "]".to_string(),
                 SpecialToken::Equal => "=".to_string(),
-                SpecialToken::TypeString => "string".to_string(),
-                SpecialToken::TypeInteger => "integer".to_string(),
-                SpecialToken::TypeFloating => "floating".to_string(),
-                SpecialToken::TypeBoolean => "boolean".to_string(),
-                SpecialToken::TypeObject => "object".to_string(),
+                SpecialToken::Comma => ",".to_string(),
             },
             Token::Eof => "eof".to_string(),
         }
