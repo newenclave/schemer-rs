@@ -12,7 +12,9 @@ pub enum SpecialToken {
     RBracket, // ]
 
     Equal, // =
-    Comma, // =
+    Comma, // ,
+    Colon, // :
+    Semicolon, // ;
 
     Interval, // ..
 }
@@ -145,6 +147,8 @@ impl TokenInfo {
                 SpecialToken::RBracket => "]".to_string(),
                 SpecialToken::Equal => "=".to_string(),
                 SpecialToken::Comma => ",".to_string(),
+                SpecialToken::Colon => ":".to_string(),
+                SpecialToken::Semicolon => ";".to_string(),
                 SpecialToken::Interval => "..".to_string(),
             },
             Token::Eof => "eof".to_string(),

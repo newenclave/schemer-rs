@@ -176,6 +176,8 @@ impl Lexer {
         lex.add_special("=", SpecialToken::Equal);
         lex.add_special(",", SpecialToken::Comma);
         lex.add_special("..", SpecialToken::Interval);
+        lex.add_special(":", SpecialToken::Colon);
+        lex.add_special(";", SpecialToken::Semicolon);
 
         lex.add_type("string", TypeName::TypeString);
         lex.add_type("integer", TypeName::TypeInteger);
@@ -204,6 +206,7 @@ impl Lexer {
     
     pub fn run(&self, data: &str) -> Result<Vec<TokenInfo>, String> {
         let mut result = Vec::new();
+        result.push(TokenInfo::new(Token::None, (0, 0)));
         let mut scanner = Scanner::new(data);
         
         while !scanner.eol() {

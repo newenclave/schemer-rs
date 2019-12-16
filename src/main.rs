@@ -10,7 +10,10 @@ use schemer::objects::{Element};
 fn main() {
 
     let val = "
-string[] data = []
+data: object = {
+    name: string
+    data: floating
+}
     ".to_string();
     let lex = Lexer::new();
     let vec = lex.run(&val);
@@ -26,7 +29,7 @@ string[] data = []
     
     let sss = pars.parse_field();
 
-    match sss {
+    match sss.value() {
         Element::None => {},
         Element::Str(v) => { println!("{}", v.to_string()); },
         Element::Integer(v) => { println!("{}", v.to_string()); },

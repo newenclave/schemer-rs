@@ -201,19 +201,21 @@ impl Parser {
         return result;
     }
 
-    fn read_name<T: ObjectBase>(&mut self, result: &mut T) {
-        if self.expect(&Token::is_ident()) {
-            match self.current().token() {
-                Token::Ident(value) => result.set_name(value),
-                _ => (),
-            }
+    fn read_name(&mut self) -> String {
+        let name = match &self.next().token() {
+            Token::Ident(value) => { Some(String::from(value)) },
+            Token::String(value) => { Some(String::from(value)) },
+            _ => None,
+        };
+        match name {
+            Some(value) => { self.advance(); value },
+            None => { String::new() },
         }
     }
 
     /// 
     pub fn parse_string(&mut self) -> StringType {
         let mut result = self.parse_begin(StringType::new());
-        self.read_name(&mut result);
         self.read_value(&mut result);
         result
     }
@@ -246,7 +248,6 @@ impl Parser {
 
     fn parse_number<T: helpers::ValueReadCheck + ObjectBase>(&mut self, mut result: T) -> T {
         result = self.parse_begin(result);
-        self.read_name(&mut result);
         self.read_value(&mut result);
         return result;
     }
@@ -261,25 +262,31 @@ impl Parser {
 
     pub fn parse_boolean(&mut self) -> BooleanType {
         let mut result = self.parse_begin(BooleanType::new());
-        self.read_name(&mut result);
         self.read_value(&mut result);
         return result;
     }
 
     pub fn parse_object(&mut self) -> ObjectType {
         let mut result = self.parse_begin(ObjectType::new());
-        self.read_name(&mut result);
         if self.expect(&Token::is_special(SpecialToken::LBrace)) {
             while !self.expect(&Token::is_special(SpecialToken::RBrace)) {
                 let element = self.parse_field();
-                
+                if result.has_field(element.name()) {
+                    panic!("Field '{}' is already defined in onject.", element.name());
+                }
+                result.add_field(element);
             }
         }
         return result;
     }
 
-    pub fn parse_field(&mut self) -> Element {
-        match &self.current().token() {
+    pub fn parse_field(&mut self) -> FieldType {
+        let name = self.read_name();
+        if name.len() > 0 && !self.expect(&Token::is_special(SpecialToken::Colon)) {
+            self.panic_expect(":");
+        }
+        self.advance();
+        let element = match &self.current().token() {
             Token::Type(name) => match name {
                 TypeName::TypeString => Element::Str(self.parse_string()),
                 TypeName::TypeInteger => Element::Integer(self.parse_integer()),
@@ -288,6 +295,7 @@ impl Parser {
                 TypeName::TypeObject => Element::Object(self.parse_object()),
             },
             _ => { self.panic_current("typename"); Element::None }
-        }
+        };
+        FieldType::new(name, element)
     }
 }

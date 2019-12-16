@@ -98,17 +98,13 @@ impl<T> PossibleArray<T> {
 
 pub trait ObjectBase {
     fn new() -> Self;
-    fn set_name(&mut self, name: &str);
     fn is_array(&self) -> bool;
     fn set_array(&mut self);
-    fn name<'a>(&'a self) -> &'a str;
 }
 
 pub struct StringType {
     value: PossibleArray<String>,
     enum_values: Option<Enum<String>>,
-    name: String,
-    opts: Options,
 }
 
 impl ObjectBase for StringType {
@@ -116,15 +112,8 @@ impl ObjectBase for StringType {
         StringType {
             value: PossibleArray::Value(String::new()),
             enum_values: None,
-            name: String::new(),
-            opts: Options::new(),
         }
     }
-
-    fn set_name(&mut self, value: &str) {
-        self.name = String::from(value);
-    }
-
     fn is_array(&self) -> bool {
         match &self.value {
             PossibleArray::Array(_) => true,
@@ -133,9 +122,6 @@ impl ObjectBase for StringType {
     }
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new())
-    }
-    fn name<'a>(&'a self) -> &'a str {
-        &self.name
     }
 }
 
@@ -156,15 +142,13 @@ impl StringType {
         let mut res = String::from("string");
         let empty = match &self.value {
             PossibleArray::Array(arr) => {
-                res.push_str("[] ");
+                res.push_str("[]");
                 arr.len() == 0
             },
             PossibleArray::Value(val) => {
-                res.push_str(" ");
                 val.len() == 0
             },
         };
-        res.push_str(&self.name);
         if !empty {
             res.push_str(" = ");
             match &self.value {
@@ -212,8 +196,6 @@ pub struct NumberType<T> {
     value: PossibleArray<T>,
     min_max: Interval<T>,
     enum_values: Option<Enum<T>>,
-    name: String,
-    opts: Options,
 }
 
 impl<T> ObjectBase for NumberType<T> where T: Numeric { 
@@ -222,27 +204,16 @@ impl<T> ObjectBase for NumberType<T> where T: Numeric {
             value: PossibleArray::Value(T::zero()),
             min_max: Interval::none(),
             enum_values: None,
-            name: String::new(),
-            opts: Options::new(),
         }
     }
-    
-    fn set_name(&mut self, value: &str) {
-        self.name = String::from(value);
-    }
-
     fn is_array(&self) -> bool {
         match &self.value {
             PossibleArray::Array(_) => true,
             _ => false,
         }
     }
-
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new())
-    }
-    fn name<'a>(&'a self) -> &'a str {
-        &self.name
     }
 }
 
@@ -267,15 +238,13 @@ impl <T> NumberType<T> where T: Numeric {
         let mut res = String::from(T::name());
         let empty = match &self.value {
             PossibleArray::Array(arr) => {
-                res.push_str("[] ");
+                res.push_str("[]");
                 arr.len() == 0
             },
             PossibleArray::Value(val) => {
-                res.push_str(" ");
                 *val == T::zero()
             },
         };
-        res.push_str(&self.name);
         if !empty {
             res.push_str(" = ");
             match &self.value {
@@ -298,16 +267,12 @@ pub type FloatingType = NumberType<f64>;
 
 pub struct BooleanType {
     value: PossibleArray<bool>,
-    name: String,
-    opts: Options,
 }
 
 impl BooleanType {
     pub fn new() -> BooleanType {
         BooleanType{
             value: PossibleArray::Value(false),
-            name: String::new(),
-            opts: Options::new(),
         }
     }
     pub fn add_value(&mut self, value: bool) {
@@ -318,15 +283,13 @@ impl BooleanType {
         let mut res = String::from("boolean");
         let empty = match &self.value {
             PossibleArray::Array(arr) => {
-                res.push_str("[] ");
+                res.push_str("[]");
                 arr.len() == 0
             },
             PossibleArray::Value(val) => {
-                res.push_str(" ");
                 !val
             },
         };
-        res.push_str(&self.name);
         if !empty {
             res.push_str(" = ");
             match &self.value {
@@ -348,25 +311,19 @@ impl ObjectBase for BooleanType {
     fn new() -> Self {
         BooleanType::new()
     }
-    fn set_name(&mut self, name: &str) {
-        self.name = String::from(name);
-    }
     fn is_array(&self) -> bool {
         self.value.is_array()
     }
     fn set_array(&mut self) {
-        self.value = PossibleArray::Array(Vec::new())
-    }
-    fn name<'a>(&'a self) -> &'a str {
-        &self.name
+        self.value = PossibleArray::Array(Vec::new());
     }
 }
 
 pub struct ObjectType {
-    value: PossibleArray<HashMap<String, Element>>,
+    value: PossibleArray<HashMap<String, FieldType>>,
     name: String,
     opts: Options,
-    fields: HashMap<String, Element>,
+    fields: HashMap<String, FieldType>,
 }
 
 impl ObjectType {
@@ -378,9 +335,11 @@ impl ObjectType {
             fields: HashMap::new(),
         }
     }
-    fn add_field(&mut self, val: Element) -> bool {
-        //if !fields.contains_key(val.name())
-        true
+    pub fn has_field(&self, val: &str) -> bool {
+        self.fields.contains_key(val)
+    }
+    pub fn add_field(&mut self, val: FieldType) {
+        self.fields.insert(String::from(val.name()), val);
     }
 }
 
@@ -388,17 +347,11 @@ impl ObjectBase for ObjectType {
     fn new() -> Self {
         ObjectType::new()
     }
-    fn set_name(&mut self, name: &str) {
-        self.name = String::from(name);
-    }
     fn is_array(&self) -> bool {
         self.value.is_array()
     }
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new());
-    }
-    fn name<'a>(&'a self) -> &'a str {
-        &self.name
     }
 }
 
@@ -409,4 +362,25 @@ pub enum Element {
     Floating(FloatingType),
     Boolean(BooleanType),
     Object(ObjectType),
+}
+
+pub struct FieldType {
+    value: Element,
+    name: String,    
+}
+
+impl FieldType {
+    pub fn new(name: String, value: Element) -> FieldType {
+        FieldType{
+            value: value,
+            name: String::from(name),    
+        }
+    }
+    pub fn value<'a>(&'a self) -> &'a Element {
+        return &self.value
+    }
+    pub fn name<'a>(&'a self) -> &'a str {
+        return &self.name
+    }
+    
 }
