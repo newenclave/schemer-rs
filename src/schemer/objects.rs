@@ -101,6 +101,7 @@ pub trait ObjectBase {
     fn set_name(&mut self, name: &str);
     fn is_array(&self) -> bool;
     fn set_array(&mut self);
+    fn name<'a>(&'a self) -> &'a str;
 }
 
 pub struct StringType {
@@ -132,6 +133,9 @@ impl ObjectBase for StringType {
     }
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new())
+    }
+    fn name<'a>(&'a self) -> &'a str {
+        &self.name
     }
 }
 
@@ -236,6 +240,9 @@ impl<T> ObjectBase for NumberType<T> where T: Numeric {
 
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new())
+    }
+    fn name<'a>(&'a self) -> &'a str {
+        &self.name
     }
 }
 
@@ -350,21 +357,31 @@ impl ObjectBase for BooleanType {
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new())
     }
+    fn name<'a>(&'a self) -> &'a str {
+        &self.name
+    }
 }
 
 pub struct ObjectType {
     value: PossibleArray<HashMap<String, Element>>,
     name: String,
     opts: Options,
+    fields: HashMap<String, Element>,
 }
 
 impl ObjectType {
     pub fn new() -> ObjectType {
-        value: PossibleArray::Value(HashMap::new()),
-        name: String::new(),
-        opts: Options::new(),
+        ObjectType {
+            value: PossibleArray::Value(HashMap::new()),
+            name: String::new(),
+            opts: Options::new(),
+            fields: HashMap::new(),
+        }
     }
-    
+    fn add_field(&mut self, val: Element) -> bool {
+        //if !fields.contains_key(val.name())
+        true
+    }
 }
 
 impl ObjectBase for ObjectType {
@@ -379,6 +396,9 @@ impl ObjectBase for ObjectType {
     }
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new());
+    }
+    fn name<'a>(&'a self) -> &'a str {
+        &self.name
     }
 }
 

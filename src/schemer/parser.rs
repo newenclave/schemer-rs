@@ -266,6 +266,18 @@ impl Parser {
         return result;
     }
 
+    pub fn parse_object(&mut self) -> ObjectType {
+        let mut result = self.parse_begin(ObjectType::new());
+        self.read_name(&mut result);
+        if self.expect(&Token::is_special(SpecialToken::LBrace)) {
+            while !self.expect(&Token::is_special(SpecialToken::RBrace)) {
+                let element = self.parse_field();
+                
+            }
+        }
+        return result;
+    }
+
     pub fn parse_field(&mut self) -> Element {
         match &self.current().token() {
             Token::Type(name) => match name {
@@ -273,7 +285,7 @@ impl Parser {
                 TypeName::TypeInteger => Element::Integer(self.parse_integer()),
                 TypeName::TypeFloating => Element::Floating(self.parse_floating()),
                 TypeName::TypeBoolean => Element::Boolean(self.parse_boolean()),
-                TypeName::TypeObject => Element::None,
+                TypeName::TypeObject => Element::Object(self.parse_object()),
             },
             _ => { self.panic_current("typename"); Element::None }
         }
