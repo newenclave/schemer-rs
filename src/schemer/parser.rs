@@ -89,16 +89,16 @@ impl Parser {
         }
     }
 
-    fn try_parse_str_array(&mut self, test_for: &StringType) -> Vec<String> {
+    fn try_parse_str_array(&mut self, output: &mut StringType) {
         let mut res: Vec<String> = Vec::new();
 
         while self.expect(&Token::is_string()) {
             match self.current().token() {
                 Token::String(val) => {
-                    if !test_for.check_enum(val) {
+                    if !output.check_enum(val) {
                         self.panic_current(&format!("Value '{}' is not valis for enum.", val));
                     }
-                    res.push(val.to_string())
+                    output.add_value(val)
                 },
                 _ => ()
             }
@@ -107,7 +107,6 @@ impl Parser {
         if !self.expect(&Token::is_special(SpecialToken::RBracket)) {
             self.panic_expect("]");
         }
-        return res;
     }
 
     /// 
@@ -144,24 +143,24 @@ impl Parser {
                 if !self.expect(&Token::is_special(SpecialToken::LBracket)) {
                     self.panic_expect("[");
                 }
-                result.set_array(self.try_parse_str_array(&result));
+                self.try_parse_str_array(&mut result);
             }
         }
         result
     }
 
-    fn try_parse_int_array(&mut self, check_for: &IntegerType) -> Vec<i64> {
+    fn try_parse_int_array(&mut self, output: &mut IntegerType) {
         let mut res: Vec<i64> = Vec::new();
 
         while self.expect(&Token::is_integer()) {
             match self.current().token() {
                 Token::Integer(val) => {
-                    if !check_for.check_enum(*val) {
+                    if !output.check_enum(*val) {
                         self.panic_current(&format!("Value {} is invalid for enum", *val));
-                    } else if !check_for.check_minmax(*val) {
+                    } else if !output.check_minmax(*val) {
                         self.panic_current(&format!("Value {} is invalid for interval", *val));
                     } else {
-                        res.push(*val)
+                        output.add_value(*val)
                     }
                 },
                 _ => ()
@@ -171,7 +170,6 @@ impl Parser {
         if !self.expect(&Token::is_special(SpecialToken::RBracket)) {
             self.panic_expect("]");
         }
-        return res;
     }
 
     pub fn parse_integer(&mut self) -> IntegerType {
@@ -211,7 +209,7 @@ impl Parser {
                 if !self.expect(&Token::is_special(SpecialToken::LBracket)) {
                     self.panic_expect("[");
                 }
-                result.set_array(self.try_parse_int_array(&result));
+                self.try_parse_int_array(&mut result);
             }
         }
         result

@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 mod schemer;
-use schemer::lexer::Lexer;
+use schemer::lexer::{Lexer};
 use schemer::parser::Parser;
 use schemer::tokens::{Token, SpecialToken};
 

@@ -1,13 +1,15 @@
 #![allow(unused)]
 
+mod utils {
+    pub fn get_top(value: &str) -> char {
+        value.chars().next().unwrap_or('\0')
+    }
+}
+
 pub struct Scanner<'a> {
     current: &'a str,
     top: char,
     position: (usize, usize),
-}
-
-fn get_top(value: &str) -> char {
-    value.chars().next().unwrap_or('\0')
 }
 
 impl<'a> Scanner<'a> {
@@ -15,7 +17,7 @@ impl<'a> Scanner<'a> {
     pub fn new (value: &str) -> Scanner {
         Scanner {
             current: value,
-            top: get_top(value),
+            top: utils::get_top(value),
             position: (1, 1), 
         }
     }
@@ -49,7 +51,7 @@ impl<'a> Scanner<'a> {
             let c: char = self.top;
             let shift = c.len_utf8();
             self.current = &self.current[shift..];
-            self.top = get_top(self.current);
+            self.top = utils::get_top(self.current);
             self.position = match c {
                 '\n' => (self.position.0 + 1, 1),
                   _  => (self.position.0, self.position.1 + 1),

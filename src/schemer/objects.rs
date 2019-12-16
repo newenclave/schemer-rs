@@ -1,7 +1,7 @@
 #![allow(unused)]
 
 use std::collections::HashMap;
-
+use std::ops::{Add, Sub};
 
 pub struct Interval<T> {
     min_max: (Option<T>, Option<T>),
@@ -40,10 +40,7 @@ impl<T> Enum<T> where T: std::cmp::PartialEq {
         }
     }
     pub fn check(&self, val: &T) -> bool {
-        match &self.values.iter().find(|&x| *val == *x) {
-            Some(_) => true,
-            None => false,
-        }
+        !self.values.iter().find(|&x| *val == *x).is_none()
     }
     pub fn try_add(&mut self, val: T) -> bool {
         if self.check(&val) {
@@ -133,18 +130,46 @@ impl StringType {
     }
 }
 
+pub trait Numeric: Add<Output=Self> + 
+                Sub<Output=Self> + 
+                PartialEq + 
+                Copy + 
+                PartialOrd + 
+                PartialEq + 
+                std::string::ToString {
+    fn zero() -> Self;
+    fn name() -> &'static str;
+}
 
-pub struct IntegerType {
-    value: PossibleArray<i64>,
-    min_max: Interval<i64>,
-    enum_values: Option<Enum<i64>>,
+impl Numeric for i64 {
+    fn zero() -> Self {
+        0 as Self
+    }
+    fn name() -> &'static str {
+        "integer"
+    }
+}
+
+impl Numeric for f64 {
+    fn zero() -> Self {
+        0.0 as Self
+    }
+    fn name() -> &'static str {
+        "floating"
+    }
+}
+
+pub struct NumberType<T> {
+    value: PossibleArray<T>,
+    min_max: Interval<T>,
+    enum_values: Option<Enum<T>>,
     name: String,
 }
 
-impl IntegerType {
-    pub fn new() -> IntegerType {
-        IntegerType {
-            value: PossibleArray::Value(0),
+impl <T> NumberType<T> where T: Numeric {
+    pub fn new() -> NumberType<T> {
+        NumberType {
+            value: PossibleArray::Value(T::zero()),
             min_max: Interval::none(),
             enum_values: None,
             name: String::new(),
@@ -161,29 +186,29 @@ impl IntegerType {
         }
     }
 
-    pub fn set_array(&mut self, values: Vec<i64>) {
+    pub fn set_array(&mut self, values: Vec<T>) {
         self.value = PossibleArray::Array(values)
     }
 
-    pub fn add_value(&mut self, value: i64) {
+    pub fn add_value(&mut self, value: T) {
         match &mut self.value {
             PossibleArray::Value(val) => { *val = value },
             PossibleArray::Array(vec) => { vec.push(value) },
         }
     }
 
-    pub fn check_enum(&self, val: i64) -> bool {
+    pub fn check_enum(&self, val: T) -> bool {
         match &self.enum_values {
             Some(vals) => vals.check(&val),
             None => true,
         }
     }
 
-    pub fn check_minmax(&self, val: i64) -> bool {
+    pub fn check_minmax(&self, val: T) -> bool {
         self.min_max.check(val)
     }
 
-    fn join(vals: &Vec<i64>, sep: &str) -> String {
+    fn join(vals: &Vec<T>, sep: &str) -> String {
         let mut first = true;
         let mut res = String::new();
 
@@ -200,7 +225,7 @@ impl IntegerType {
     }
 
     pub fn to_string(&self) -> String {
-        let mut res = String::from("integer");
+        let mut res = String::from(T::name());
         let empty = match &self.value {
             PossibleArray::Array(arr) => {
                 res.push_str("[] ");
@@ -208,7 +233,7 @@ impl IntegerType {
             },
             PossibleArray::Value(val) => {
                 res.push_str(" ");
-                *val == 0
+                *val == T::zero()
             },
         };
         res.push_str(&self.name);
@@ -217,7 +242,7 @@ impl IntegerType {
             match &self.value {
                 PossibleArray::Array(arr) => {
                     res.push_str("[");
-                    res.push_str(&IntegerType::join(arr, ", "));
+                    res.push_str(&NumberType::join(arr, ", "));
                     res.push_str("]"); 
                 },
                 PossibleArray::Value(val) => {
@@ -229,14 +254,11 @@ impl IntegerType {
     }
 }
 
-struct FloatingType {}
+pub type IntegerType = NumberType<i64>;
+pub type FloatingType = NumberType<f64>;
+
 struct BooleanType {}
 struct ObjectType {}
-
-struct IntegerTypeInfo {}
-struct FloatingTypeInfo {}
-struct BooleanTypeInfo {}
-struct ObjectTypeInfo {}
 
 enum Element {
     None,
