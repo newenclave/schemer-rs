@@ -92,7 +92,7 @@ impl<T> PossibleArray<T> {
         match self {
             PossibleArray::Value(_) => false,
             PossibleArray::Array(_) => true,
-        }        
+        }
     }
 } 
 
@@ -353,10 +353,33 @@ impl ObjectBase for BooleanType {
 }
 
 pub struct ObjectType {
-    value: PossibleArray<bool>,
+    value: PossibleArray<HashMap<String, Element>>,
     name: String,
     opts: Options,
-    fields: HashMap<String, Element>,
+}
+
+impl ObjectType {
+    pub fn new() -> ObjectType {
+        value: PossibleArray::Value(HashMap::new()),
+        name: String::new(),
+        opts: Options::new(),
+    }
+    
+}
+
+impl ObjectBase for ObjectType {
+    fn new() -> Self {
+        ObjectType::new()
+    }
+    fn set_name(&mut self, name: &str) {
+        self.name = String::from(name);
+    }
+    fn is_array(&self) -> bool {
+        self.value.is_array()
+    }
+    fn set_array(&mut self) {
+        self.value = PossibleArray::Array(Vec::new());
+    }
 }
 
 pub enum Element {
