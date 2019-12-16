@@ -399,7 +399,6 @@ impl ObjectType {
             },
         };
         res.push_str(" {\n");
-        res.push_str(&" ".repeat(start));
         for (k, v) in self.fields.iter() {
             res.push_str(&" ".repeat(start + 1));
             res.push_str(&(k.to_owned() + ": "));
