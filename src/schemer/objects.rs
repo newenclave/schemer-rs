@@ -3,6 +3,30 @@
 use std::collections::HashMap;
 use std::ops::{Add, Sub};
 
+mod utils {
+    pub fn string_join<T: std::string::ToString>(vals: &Vec<T>, sep: &str) -> String {
+        let mut first = true;
+        let mut res = String::new();
+
+        for v in vals.iter() {
+            if first {
+                first = false;
+            } else {
+                res.push_str(sep);
+            }
+            res.push_str(&v.to_string());
+        }
+        return res;
+    }
+}
+
+pub struct Options {}
+impl Options {
+    pub fn new() -> Options {
+        Options{}
+    }
+}
+
 pub struct Interval<T> {
     min_max: (Option<T>, Option<T>),
 }
@@ -36,7 +60,7 @@ pub struct Enum<T> {
 impl<T> Enum<T> where T: std::cmp::PartialEq {
     pub fn new() -> Enum<T> {
         Enum {
-            values: Vec::new(),       
+            values: Vec::new(),
         }
     }
     pub fn check(&self, val: &T) -> bool {
@@ -57,35 +81,62 @@ pub enum PossibleArray<T> {
     Array(Vec<T>),
 }
 
+impl<T> PossibleArray<T> {
+    pub fn add_value(&mut self, value: T) {
+        match self {
+            PossibleArray::Value(val) => { *val = value },
+            PossibleArray::Array(vec) => { vec.push(value) },
+        }
+    }
+    pub fn is_array(&self) -> bool {
+        match self {
+            PossibleArray::Value(_) => false,
+            PossibleArray::Array(_) => true,
+        }        
+    }
+} 
+
+pub trait ObjectBase {
+    fn new() -> Self;
+    fn set_name(&mut self, name: &str);
+    fn is_array(&self) -> bool;
+    fn set_array(&mut self);
+}
+
 pub struct StringType {
     value: PossibleArray<String>,
     enum_values: Option<Enum<String>>,
     name: String,
+    opts: Options,
 }
 
-impl StringType {
-    pub fn new() -> StringType {
+impl ObjectBase for StringType {
+    fn new() -> StringType {
         StringType {
             value: PossibleArray::Value(String::new()),
             enum_values: None,
-            name: String::new(),        
+            name: String::new(),
+            opts: Options::new(),
         }
     }
-    pub fn set_name(&mut self, value: &str) {
+
+    fn set_name(&mut self, value: &str) {
         self.name = String::from(value);
     }
 
-    pub fn is_array(&self) -> bool {
+    fn is_array(&self) -> bool {
         match &self.value {
             PossibleArray::Array(_) => true,
             _ => false,
         }
     }
-
-    pub fn set_array(&mut self, values: Vec<String>) {
-        self.value = PossibleArray::Array(values)
+    fn set_array(&mut self) {
+        self.value = PossibleArray::Array(Vec::new())
     }
-    
+}
+
+impl StringType {
+
     pub fn check_enum(&self, val: &String) -> bool {
         match &self.enum_values {
             Some(vals) => vals.check(&val),
@@ -94,10 +145,7 @@ impl StringType {
     }
 
     pub fn add_value(&mut self, value: &str) {
-        match &mut self.value {
-            PossibleArray::Value(val) => { *val = String::from(value) },
-            PossibleArray::Array(vec) => { vec.push(String::from(value)) },
-        }
+        self.value.add_value(String::from(value));
     }
 
     pub fn to_string(&self) -> String {
@@ -130,10 +178,7 @@ impl StringType {
     }
 }
 
-pub trait Numeric: Add<Output=Self> + 
-                Sub<Output=Self> + 
-                PartialEq + 
-                Copy + 
+pub trait Numeric: Copy + 
                 PartialOrd + 
                 PartialEq + 
                 std::string::ToString {
@@ -164,37 +209,40 @@ pub struct NumberType<T> {
     min_max: Interval<T>,
     enum_values: Option<Enum<T>>,
     name: String,
+    opts: Options,
 }
 
-impl <T> NumberType<T> where T: Numeric {
-    pub fn new() -> NumberType<T> {
+impl<T> ObjectBase for NumberType<T> where T: Numeric { 
+    fn new() -> NumberType<T> {
         NumberType {
             value: PossibleArray::Value(T::zero()),
             min_max: Interval::none(),
             enum_values: None,
             name: String::new(),
+            opts: Options::new(),
         }
     }
-    pub fn set_name(&mut self, value: &str) {
+    
+    fn set_name(&mut self, value: &str) {
         self.name = String::from(value);
     }
 
-    pub fn is_array(&self) -> bool {
+    fn is_array(&self) -> bool {
         match &self.value {
             PossibleArray::Array(_) => true,
             _ => false,
         }
     }
 
-    pub fn set_array(&mut self, values: Vec<T>) {
-        self.value = PossibleArray::Array(values)
+    fn set_array(&mut self) {
+        self.value = PossibleArray::Array(Vec::new())
     }
+}
+
+impl <T> NumberType<T> where T: Numeric {
 
     pub fn add_value(&mut self, value: T) {
-        match &mut self.value {
-            PossibleArray::Value(val) => { *val = value },
-            PossibleArray::Array(vec) => { vec.push(value) },
-        }
+        self.value.add_value(value);
     }
 
     pub fn check_enum(&self, val: T) -> bool {
@@ -206,22 +254,6 @@ impl <T> NumberType<T> where T: Numeric {
 
     pub fn check_minmax(&self, val: T) -> bool {
         self.min_max.check(val)
-    }
-
-    fn join(vals: &Vec<T>, sep: &str) -> String {
-        let mut first = true;
-        let mut res = String::new();
-
-        for v in vals.iter() {
-            if first {
-                first = false;
-            } else {
-                res.push_str(sep);
-            }
-            res.push_str(&v.to_string());
-        }
-
-        return res;
     }
 
     pub fn to_string(&self) -> String {
@@ -242,7 +274,7 @@ impl <T> NumberType<T> where T: Numeric {
             match &self.value {
                 PossibleArray::Array(arr) => {
                     res.push_str("[");
-                    res.push_str(&NumberType::join(arr, ", "));
+                    res.push_str(&utils::string_join(&arr, ", "));
                     res.push_str("]"); 
                 },
                 PossibleArray::Value(val) => {
@@ -257,10 +289,77 @@ impl <T> NumberType<T> where T: Numeric {
 pub type IntegerType = NumberType<i64>;
 pub type FloatingType = NumberType<f64>;
 
-struct BooleanType {}
-struct ObjectType {}
+pub struct BooleanType {
+    value: PossibleArray<bool>,
+    name: String,
+    opts: Options,
+}
 
-enum Element {
+impl BooleanType {
+    pub fn new() -> BooleanType {
+        BooleanType{
+            value: PossibleArray::Value(false),
+            name: String::new(),
+            opts: Options::new(),
+        }
+    }
+    pub fn add_value(&mut self, value: bool) {
+        self.value.add_value(value);
+    }
+
+    pub fn to_string(&self) -> String {
+        let mut res = String::from("boolean");
+        let empty = match &self.value {
+            PossibleArray::Array(arr) => {
+                res.push_str("[] ");
+                arr.len() == 0
+            },
+            PossibleArray::Value(val) => {
+                res.push_str(" ");
+                !val
+            },
+        };
+        res.push_str(&self.name);
+        if !empty {
+            res.push_str(" = ");
+            match &self.value {
+                PossibleArray::Array(arr) => {
+                    res.push_str("["); 
+                    res.push_str(&utils::string_join(&arr, ", "));
+                    res.push_str("]");
+                },
+                PossibleArray::Value(val) => {
+                    res.push_str(&format!("{}", val));
+                },
+            }
+        }
+        return res;
+    }        
+}
+
+impl ObjectBase for BooleanType {
+    fn new() -> Self {
+        BooleanType::new()
+    }
+    fn set_name(&mut self, name: &str) {
+        self.name = String::from(name);
+    }
+    fn is_array(&self) -> bool {
+        self.value.is_array()
+    }
+    fn set_array(&mut self) {
+        self.value = PossibleArray::Array(Vec::new())
+    }
+}
+
+pub struct ObjectType {
+    value: PossibleArray<bool>,
+    name: String,
+    opts: Options,
+    fields: HashMap<String, Element>,
+}
+
+pub enum Element {
     None,
     Str(StringType),
     Integer(IntegerType),
@@ -268,4 +367,3 @@ enum Element {
     Boolean(BooleanType),
     Object(ObjectType),
 }
-

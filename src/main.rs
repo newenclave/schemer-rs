@@ -4,12 +4,13 @@ mod schemer;
 use schemer::lexer::{Lexer};
 use schemer::parser::Parser;
 use schemer::tokens::{Token, SpecialToken};
+use schemer::objects::{Element};
 
 
 fn main() {
 
     let val = "
-integer[] data = [1, 2, 3, 4]
+string[] data = []
     ".to_string();
     let lex = Lexer::new();
     let vec = lex.run(&val);
@@ -23,8 +24,14 @@ integer[] data = [1, 2, 3, 4]
         },
     };
     
-    let sss = pars.parse_integer();
+    let sss = pars.parse_field();
 
-    println!("{}", sss.to_string());
-
+    match sss {
+        Element::None => {},
+        Element::Str(v) => { println!("{}", v.to_string()); },
+        Element::Integer(v) => { println!("{}", v.to_string()); },
+        Element::Floating(v) => { println!("{}", v.to_string()); },
+        Element::Boolean(v) => { println!("{}", v.to_string()); },
+        Element::Object(v) => { println!("obj"); },
+    }
 }

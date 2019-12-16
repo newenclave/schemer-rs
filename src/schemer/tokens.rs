@@ -33,6 +33,7 @@ pub enum Token {
     Integer(i64),
     Floating(f64),
     String(String),
+    Boolean(bool),
     Type(TypeName),
     Special(SpecialToken),
     Eof,
@@ -67,6 +68,12 @@ impl Token {
     pub fn is_string() -> impl Fn(&Token) -> bool {
         |tok: &Token| match tok {
             Token::String(_) => true,
+            _ => false
+        }
+    }
+    pub fn is_boolean() -> impl Fn(&Token) -> bool {
+        |tok: &Token| match tok {
+            Token::Boolean(_) => true,
             _ => false
         }
     }
@@ -121,6 +128,7 @@ impl TokenInfo {
             Token::Integer(i) => format!("{}", i),
             Token::Floating(f) => format!("{}", f),
             Token::String(s) => format!("\"{}\"", s),
+            Token::Boolean(b) => (if *b { "true" } else { "false" }).to_string(),
             Token::Type(t) => match t {
                 TypeName::TypeString => "string".to_string(),
                 TypeName::TypeInteger => "integer".to_string(),

@@ -183,17 +183,23 @@ impl Lexer {
         lex.add_type("boolean", TypeName::TypeBoolean);
         lex.add_type("object", TypeName::TypeObject);
         
+        lex.add("true", Token::Boolean(true));
+        lex.add("false", Token::Boolean(false));
+
         return lex;
     }
 
-    fn add_type(&mut self, key: &str, value: TypeName) {
+    fn add(&mut self, key: &str, value: Token) {
         let ident = is_ident_string(key);
-        self.trie.set(key, TokenPack::new(Token::Type(value), ident));
+        self.trie.set(key, TokenPack::new(value, ident));
+    }
+
+    fn add_type(&mut self, key: &str, value: TypeName) {
+        self.add(key, Token::Type(value));
     }
 
     fn add_special(&mut self, key: &str, value: SpecialToken) {
-        let ident = is_ident_string(key);
-        self.trie.set(key, TokenPack::new(Token::Special(value), ident));
+        self.add(key, Token::Special(value));
     }
     
     pub fn run(&self, data: &str) -> Result<Vec<TokenInfo>, String> {
