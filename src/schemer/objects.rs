@@ -31,7 +31,7 @@ pub struct Interval<T> {
     min_max: (Option<T>, Option<T>),
 }
 
-impl<T> Interval<T> where T: std::cmp::PartialOrd {
+impl<T> Interval<T> where T: std::cmp::PartialOrd + Copy {
     pub fn new(min: Option<T>, max: Option<T>) -> Interval<T> {
         Interval {
             min_max: (min, max)
@@ -49,6 +49,34 @@ impl<T> Interval<T> where T: std::cmp::PartialOrd {
         } && match &self.min_max.1 {
             Some(max_val) => val <= *max_val,
             None => true,
+        }
+    }
+    pub fn set_min(&mut self, val: T) {
+        self.min_max.0 = Some(val);
+    }
+    pub fn set_max(&mut self, val: T) {
+        self.min_max.1 = Some(val);
+    }
+
+    pub fn has_min(&self) -> bool {
+        !self.min_max.0.is_none()
+    }
+    pub fn has_max(&self) -> bool {
+        !self.min_max.1.is_none()
+    }
+    pub fn has_minmax(&self) -> bool {
+        self.has_min() || self.has_max()
+    }
+    pub fn min(&self, default: T) -> T {
+        match &self.min_max.0 {
+            Some(val) => *val,
+            None => default,
+        }
+    }
+    pub fn max(&self, default: T) -> T {
+        match &self.min_max.1 {
+            Some(val) => *val,
+            None => default,
         }
     }
 }
@@ -138,7 +166,7 @@ impl StringType {
         self.value.add_value(String::from(value));
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_string(&self, start: usize) -> String {
         let mut res = String::from("string");
         let empty = match &self.value {
             PossibleArray::Array(arr) => {
@@ -234,7 +262,15 @@ impl <T> NumberType<T> where T: Numeric {
         self.min_max.check(val)
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn set_min(&mut self, val: T) {
+        self.min_max.set_min(val);
+    }
+
+    pub fn set_max(&mut self, val: T) {
+        self.min_max.set_max(val);
+    }
+
+    pub fn to_string(&self, start: usize) -> String {
         let mut res = String::from(T::name());
         let empty = match &self.value {
             PossibleArray::Array(arr) => {
@@ -245,6 +281,16 @@ impl <T> NumberType<T> where T: Numeric {
                 *val == T::zero()
             },
         };
+        if self.min_max.has_minmax() {
+            res.push_str(" ");
+            if self.min_max.has_min() {
+                res.push_str(&self.min_max.min(T::zero()).to_string());
+            }
+            res.push_str("..");
+            if self.min_max.has_max() {
+                res.push_str(&self.min_max.max(T::zero()).to_string());
+            }
+        }
         if !empty {
             res.push_str(" = ");
             match &self.value {
@@ -279,7 +325,7 @@ impl BooleanType {
         self.value.add_value(value);
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_string(&self, start: usize) -> String {
         let mut res = String::from("boolean");
         let empty = match &self.value {
             PossibleArray::Array(arr) => {
@@ -341,6 +387,29 @@ impl ObjectType {
     pub fn add_field(&mut self, val: FieldType) {
         self.fields.insert(String::from(val.name()), val);
     }
+    pub fn to_string(&self, start: usize) -> String {
+        let mut res = String::from("object");
+        let empty = match &self.value {
+            PossibleArray::Array(arr) => {
+                res.push_str("[]");
+                arr.len() == 0
+            },
+            PossibleArray::Value(val) => {
+                val.len() > 0
+            },
+        };
+        res.push_str(" {\n");
+        res.push_str(&" ".repeat(start));
+        for (k, v) in self.fields.iter() {
+            res.push_str(&" ".repeat(start + 1));
+            res.push_str(&(k.to_owned() + ": "));
+            res.push_str(&v.to_string(start + 1));
+            res.push_str("\n");
+        } 
+        res.push_str(&" ".repeat(start));
+        res.push_str("}");
+        return res
+    }
 }
 
 impl ObjectBase for ObjectType {
@@ -382,5 +451,14 @@ impl FieldType {
     pub fn name<'a>(&'a self) -> &'a str {
         return &self.name
     }
-    
+    pub fn to_string(&self, start: usize) -> String {
+        match self.value() {
+            Element::None => "".to_string(),
+            Element::Str(v) => { v.to_string(start) },
+            Element::Integer(v) => { v.to_string(start) },
+            Element::Floating(v) => { v.to_string(start) },
+            Element::Boolean(v) => { v.to_string(start) },
+            Element::Object(v) => { v.to_string(start) },
+        }
+    }
 }

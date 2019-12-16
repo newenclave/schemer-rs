@@ -204,6 +204,10 @@ impl Lexer {
         self.add(key, Token::Special(value));
     }
     
+    fn literal(&self, from: &Scanner, to: &Scanner) {
+
+    }
+
     pub fn run(&self, data: &str) -> Result<Vec<TokenInfo>, String> {
         let mut result = Vec::new();
         result.push(TokenInfo::new(Token::None, (0, 0)));

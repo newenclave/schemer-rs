@@ -34,6 +34,41 @@ mod helpers {
         BooleanType,
     };
 
+    pub trait WithInterval {
+        fn set_min(&mut self, parser: &mut Parser);
+        fn set_max(&mut self, parser: &mut Parser);
+    }
+
+    impl WithInterval for IntegerType {
+        fn set_min(&mut self, parser: &mut Parser) {
+            match &parser.current().token() {
+                Token::Integer(val) => self.set_min(*val),
+                _ => (),
+            }
+        }
+        fn set_max(&mut self, parser: &mut Parser) {
+            match &parser.current().token() {
+                Token::Integer(val) => self.set_max(*val),
+                _ => (),
+            }
+        }
+    }
+
+    impl WithInterval for FloatingType {
+        fn set_min(&mut self, parser: &mut Parser) {
+            match parser.current().token() {
+                Token::Floating(val) => self.set_min(*val),
+                _ => (),
+            }
+        }
+        fn set_max(&mut self, parser: &mut Parser) {
+            match parser.current().token() {
+                Token::Floating(val) => self.set_max(*val),
+                _ => (),
+            }
+        }
+    }
+
     pub trait ValueReadCheck {
         fn token_checker(val: &Token) -> bool;
         fn expected() -> &'static str;
@@ -220,6 +255,27 @@ impl Parser {
         result
     }
 
+    fn read_interval<T: helpers::ValueReadCheck + helpers::WithInterval>(&mut self, result: &mut T) -> bool {
+        if self.expect(&T::token_checker) {
+            result.set_min(self);
+            if !self.expect(&Token::is_special(SpecialToken::Interval)) {
+                self.panic_expect("..")
+            }
+            if self.expect(&T::token_checker) {
+                result.set_max(self);
+            }
+            true
+        } else if self.expect(&Token::is_special(SpecialToken::Interval)) {
+            self.advance();
+            if self.expect(&T::token_checker) {
+                result.set_max(self);
+            }
+            true
+        } else {
+            false
+        }
+    }
+
     fn read_value<T: helpers::ValueReadCheck + ObjectBase>(&mut self, output: &mut T) {
         if self.expect(&Token::is_special(SpecialToken::Equal)) {
             if !output.is_array() {
@@ -246,8 +302,11 @@ impl Parser {
         }
     }
 
-    fn parse_number<T: helpers::ValueReadCheck + ObjectBase>(&mut self, mut result: T) -> T {
+    fn parse_number<T: helpers::ValueReadCheck 
+            + ObjectBase 
+            + helpers::WithInterval>(&mut self, mut result: T) -> T {
         result = self.parse_begin(result);
+        self.read_interval(&mut result);
         self.read_value(&mut result);
         return result;
     }

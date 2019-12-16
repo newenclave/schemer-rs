@@ -9,10 +9,18 @@ use schemer::objects::{Element};
 
 fn main() {
 
+    println!("'{}'", "!".repeat(0));
+
     let val = "
-data: object = {
-    name: string
-    data: floating
+
+main: object[] {
+    data: string = \"hello!\"
+    value: integer = 100
+    flag: boolean = false
+    num: floating[] = [0.009, 1, 100.5]
+    inside: object {
+        repeat: integer 1..100 = 50
+    }
 }
     ".to_string();
     let lex = Lexer::new();
@@ -29,12 +37,5 @@ data: object = {
     
     let sss = pars.parse_field();
 
-    match sss.value() {
-        Element::None => {},
-        Element::Str(v) => { println!("{}", v.to_string()); },
-        Element::Integer(v) => { println!("{}", v.to_string()); },
-        Element::Floating(v) => { println!("{}", v.to_string()); },
-        Element::Boolean(v) => { println!("{}", v.to_string()); },
-        Element::Object(v) => { println!("obj"); },
-    }
+    println!("{}", sss.to_string(0));
 }

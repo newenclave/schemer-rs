@@ -104,14 +104,16 @@ impl Token {
 #[derive(Clone)]
 pub struct TokenInfo {
     token: Token,
-    position: (usize, usize)
+    position: (usize, usize),
+    literal: String,
 }
 
 impl TokenInfo {
     pub fn new(value: Token, pos: (usize, usize)) -> TokenInfo {
         TokenInfo {
             token: value,
-            position: pos
+            position: pos,
+            literal: "".to_string(),
         }
     } 
 
