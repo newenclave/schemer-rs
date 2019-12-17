@@ -9,21 +9,21 @@ use schemer::objects::{Element};
 
 fn main() {
 
-    let _val = "
+    let val = "
 main: object[] {
-    data: string = \"hello!\"
-    value: integer = 100
-    flag: boolean = false
-    num: floating[] = [0.009, 1, 100.5]
+    data: string = \"hello!\";
+    value: integer = 100;
+    flag: boolean = false;
+    num: floating[] = [0.009, 1, 100.5];
     inside: object {
-        repeat: integer 1..100 = 50
-        flop: floating 1..100 = 50
+        repeat: integer 1..100 = 50;
+        flop: floating 1..100 = 50;
     }
     empty: object[] {} = [{}, {}, {}]
 }
     ".to_string();
 
-    let val = "
+    let _val = "
     test: object[] {
         name: string = \"123\"
         value: integer 1..100

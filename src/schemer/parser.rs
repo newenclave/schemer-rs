@@ -186,13 +186,13 @@ mod helpers {
                     Some(value) => {
                         match value.value() {
                             Element::None => (),
-                            Element::Str(v) => { 
+                            Element::String(v) => { 
                                 let mut val = StringType::new();
                                 if v.is_array() {
                                     val.set_array();
                                 }
                                 parser.read_value(&mut val);
-                                next.add_field(FieldType::new(field_name, Element::Str(val)));
+                                next.add_field(FieldType::new(field_name, Element::String(val)));
                             },
                             Element::Integer(v) => {
                                 let mut val = create_same_object(v);
@@ -405,10 +405,10 @@ impl Parser {
                     panic!("Field '{}' is already defined in onject.", element.name());
                 }
                 result.add_field(element);
+                self.expect(&Token::is_special(SpecialToken::Semicolon));
             } 
             self.read_value(&mut result);
         }
-
         return result;
     }
 
@@ -420,7 +420,7 @@ impl Parser {
         self.advance();
         let element = match &self.current().token() {
             Token::Type(name) => match name {
-                TypeName::TypeString => Element::Str(self.parse_string()),
+                TypeName::TypeString => Element::String(self.parse_string()),
                 TypeName::TypeInteger => Element::Integer(self.parse_integer()),
                 TypeName::TypeFloating => Element::Floating(self.parse_floating()),
                 TypeName::TypeBoolean => Element::Boolean(self.parse_boolean()),

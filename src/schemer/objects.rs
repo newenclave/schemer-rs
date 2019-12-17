@@ -526,7 +526,7 @@ impl ObjectBase for ObjectType {
 #[derive(Clone)]
 pub enum Element {
     None,
-    Str(StringType),
+    String(StringType),
     Integer(IntegerType),
     Floating(FloatingType),
     Boolean(BooleanType),
@@ -540,7 +540,7 @@ impl Element {
     fn value_to_string(&self) -> String {
         match &self {
             Element::None => "".to_string(),
-            Element::Str(v) => { object_value_to_string(v) },
+            Element::String(v) => { object_value_to_string(v) },
             Element::Integer(v) => { object_value_to_string(v) },
             Element::Floating(v) => { object_value_to_string(v) },
             Element::Boolean(v) => { object_value_to_string(v) },
@@ -572,7 +572,7 @@ impl FieldType {
     pub fn to_string(&self, start: usize) -> String {
         match self.value() {
             Element::None => "".to_string(),
-            Element::Str(v) => { v.to_string(start) },
+            Element::String(v) => { v.to_string(start) },
             Element::Integer(v) => { v.to_string(start) },
             Element::Floating(v) => { v.to_string(start) },
             Element::Boolean(v) => { v.to_string(start) },
