@@ -25,14 +25,7 @@ pub struct Parser {
 }
 
 mod helpers {
-    use super::{ 
-        Token, 
-        Parser, 
-        IntegerType, 
-        FloatingType,
-        StringType,
-        BooleanType,
-    };
+    use super::*;
 
     pub trait WithInterval {
         fn set_min(&mut self, parser: &mut Parser);
@@ -159,6 +152,84 @@ mod helpers {
             }
         }
     }
+
+    impl ValueReadCheck for ObjectType {
+        fn token_checker(val: &Token) -> bool {
+            Token::is_special(SpecialToken::LBrace)(val)
+        }
+        fn expected() -> &'static str {
+            "{"
+        }
+
+        fn read_value(&mut self, parser: &mut Parser) {
+            let mut next = ObjectType::new();
+            next.set_fields(self.clone_fields());
+            while !parser.expect(&Token::is_special(SpecialToken::RBrace)) {
+                let (found, field_name) = parser.read_name();
+                if !found {
+                    if Token::is_special(SpecialToken::RBrace)(parser.next().token()) {
+                        break;
+                    } else {
+                        parser.panic_expect("field name");
+                    }
+                }
+                let field = self.get_field(&field_name);
+                match field {
+                    Some(value) => {
+                        match value.value() {
+                            Element::None => (),
+                            Element::Str(v) => { 
+                                let mut val = StringType::new();
+                                if v.is_array() {
+                                    val.set_array();
+                                }
+                                parser.read_value(&mut val);
+                                next.add_field(FieldType::new(field_name, Element::Str(val)));
+                            },
+                            Element::Integer(v) => {
+                                let mut val = IntegerType::new();
+                                if v.is_array() {
+                                    val.set_array();
+                                }
+                                parser.read_value(&mut val);
+                                next.add_field(FieldType::new(field_name, Element::Integer(val)));
+                            },
+                            Element::Floating(v) => {
+                                let mut val = FloatingType::new();
+                                if v.is_array() {
+                                    val.set_array();
+                                }
+                                parser.read_value(&mut val);
+                                next.add_field(FieldType::new(field_name, Element::Floating(val)));
+                            },
+                            Element::Boolean(v) => { 
+                                let mut val = BooleanType::new();
+                                if v.is_array() {
+                                    val.set_array();
+                                }
+                                parser.read_value(&mut val);
+                                next.add_field(FieldType::new(field_name, Element::Boolean(val)));
+                            },
+                            Element::Object(v) => { 
+                                let mut val = ObjectType::new();
+                                if v.is_array() {
+                                    val.set_array();
+                                }
+                                val.set_fields(v.clone_fields());
+                                parser.read_value(&mut val);
+                                next.add_field(FieldType::new(field_name, Element::Object(val)));
+                            },
+                        }
+                    },
+                    None => {
+                        panic!("Object doesn't contain field with name '{}'", field_name);
+                    },
+                }
+                parser.expect(&Token::is_special(SpecialToken::Comma));
+            }
+            self.add_value(next);
+        }
+    }
 }
 
 impl Parser {
@@ -236,15 +307,15 @@ impl Parser {
         return result;
     }
 
-    fn read_name(&mut self) -> String {
+    fn read_name(&mut self) -> (bool, String) {
         let name = match &self.next().token() {
             Token::Ident(value) => { Some(String::from(value)) },
             Token::String(value) => { Some(String::from(value)) },
             _ => None,
         };
         match name {
-            Some(value) => { self.advance(); value },
-            None => { String::new() },
+            Some(value) => { self.advance(); (true, value) },
+            None => { (false, String::new()) },
         }
     }
 
@@ -276,19 +347,23 @@ impl Parser {
         }
     }
 
+    fn read_value_nocheck<T: helpers::ValueReadCheck + ObjectBase>(&mut self, output: &mut T) {
+        if !output.is_array() {
+            if !self.expect(&T::token_checker) {
+                self.panic_expect(T::expected());
+            }
+            output.read_value(self);
+        } else {
+            if !self.expect(&Token::is_special(SpecialToken::LBracket)) {
+                self.panic_expect("[");
+            }
+            self.try_read_array(output);
+        }
+    }
+
     fn read_value<T: helpers::ValueReadCheck + ObjectBase>(&mut self, output: &mut T) {
         if self.expect(&Token::is_special(SpecialToken::Equal)) {
-            if !output.is_array() {
-                if !self.expect(&T::token_checker) {
-                    self.panic_expect(T::expected());
-                }
-                output.read_value(self);
-            } else {
-                if !self.expect(&Token::is_special(SpecialToken::LBracket)) {
-                    self.panic_expect("[");
-                }
-                self.try_read_array(output);
-            }
+            self.read_value_nocheck(output);
         }
     }
 
@@ -334,13 +409,15 @@ impl Parser {
                     panic!("Field '{}' is already defined in onject.", element.name());
                 }
                 result.add_field(element);
-            }
+            } 
+            self.read_value(&mut result);
         }
+
         return result;
     }
 
     pub fn parse_field(&mut self) -> FieldType {
-        let name = self.read_name();
+        let (_, name) = self.read_name();
         if name.len() > 0 && !self.expect(&Token::is_special(SpecialToken::Colon)) {
             self.panic_expect(":");
         }

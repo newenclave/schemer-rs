@@ -33,7 +33,7 @@ mod helpers {
 
         let mut d: i64 = 0;
         let mut a: f64 = 0.0;
-        let mut e: i32 = 0;
+        let mut e: i64 = 0;
         
         while !scan.eol() && scan.top().is_digit(10) {
             let value = scan.top().to_digit(10).unwrap();
@@ -61,8 +61,8 @@ mod helpers {
         }
     
         if scan.top() == 'e' || scan.top() == 'E' {
-            let mut sign: i32 = 1;
-            let mut i: i32 = 0;
+            let mut sign: i64 = 1;
+            let mut i: i64 = 0;
             scan.advance();
             match scan.top() {
                 '+' => { scan.advance(); },
@@ -72,7 +72,7 @@ mod helpers {
             while !scan.eol() && scan.top().is_digit(10) {
                 found = true;
                 i *= 10;
-                i += scan.top().to_digit(10).unwrap() as i32;
+                i += scan.top().to_digit(10).unwrap() as i64;
                 scan.advance();
             }
             e += i * sign;
@@ -87,7 +87,6 @@ mod helpers {
             a *= 0.1;
             e += 1;
         }
-    
         return if found {
             Number::Floating(a)
         } else {

@@ -9,10 +9,7 @@ use schemer::objects::{Element};
 
 fn main() {
 
-    println!("'{}'", "!".repeat(0));
-
-    let val = "
-
+    let _val = "
 main: object[] {
     data: string = \"hello!\"
     value: integer = 100
@@ -22,8 +19,17 @@ main: object[] {
         repeat: integer 1..100 = 50
         flop: floating 1..100 = 50
     }
-    empty: object {}
+    empty: object[] {} = [{}, {}, {}]
 }
+    ".to_string();
+
+    let val = "
+main: object[] {
+    data: integer = 10
+    mix: object[] {
+        min: integer = 0
+    }
+   } = [{mix = [{min = 1}, {min = 2}, {min = 3}]}]
     ".to_string();
     let lex = Lexer::new();
     let vec = lex.run(&val);
