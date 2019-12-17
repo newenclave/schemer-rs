@@ -178,7 +178,7 @@ mod helpers {
                     if Token::is_special(SpecialToken::RBrace)(parser.next().token()) {
                         break;
                     } else {
-                        parser.panic_expect("field name");
+                        parser.panic_expect("ident, string or }");
                     }
                 }
                 let field = self.get_field(&field_name);

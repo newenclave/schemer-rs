@@ -9,7 +9,7 @@ use schemer::objects::{Element};
 
 fn main() {
 
-    let val = "
+    let _val = "
 main: object[] {
     data: string = \"hello!\";
     value: integer = 100;
@@ -23,8 +23,19 @@ main: object[] {
 }
     ".to_string();
 
-    let _val = "
+    let val = "
     test: object[] {
+        int: object {
+            int: object {
+                int: object {
+                    int: object {
+                        int: object {
+                            itnt: boolean = false
+                        }
+                    }
+                }
+            }
+        }
         name: string = \"123\"
         value: integer 1..100
     } = [{ name: \"test name\", \"value\": 50 }, {}, {}]
