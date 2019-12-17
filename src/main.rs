@@ -21,25 +21,25 @@ main: object[] {
     }
     empty: object[] {} = [{}, {}, {}]
 }
-    ".to_string();
+    ".to_owned();
 
     let val = "
-    test: object[] {
+    object[] {
         int: object {
+         int: object {
+          int: object {
+           int: object {
             int: object {
-                int: object {
-                    int: object {
-                        int: object {
-                            itnt: boolean = false
-                        }
-                    }
-                }
+             itnt: boolean
             }
+           }
+          }
+         }
         }
         name: string = \"123\"
         value: integer 1..100
-    } = [{ name: \"test name\", \"value\": 50 }, {}, {}]
-    ".to_string();
+       } = [{int = {int = {int = {int = {int = {itnt = false}}}}}, name = \"test name\", value = 50}, {int = {int = {int = {int = {int = {itnt = false}}}}}, name = \"123\", value = 0}, {int = {int = {int = {int = {int = {itnt = false}}}}}, name = \"123\", value = 0}]
+    ".to_owned();
     let lex = Lexer::new();
     let vec = lex.run(&val);
 

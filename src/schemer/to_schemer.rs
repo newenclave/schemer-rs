@@ -9,3 +9,4 @@ trait ToSchemer {
 pub to_schemer_string<T: ToSchemer>(obj: &T) {
     obj.to_schemer_string()
 }
+
