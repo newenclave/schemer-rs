@@ -40,52 +40,14 @@ pub struct StringType {
     enum_values: Option<Enum<String>>,
 }
 
-impl ObjectBase for StringType {
-    fn new() -> StringType {
+
+impl StringType {
+    pub fn new() -> StringType {
         StringType {
             value: PossibleArray::Value(String::new()),
             enum_values: None,
         }
     }
-    fn is_array(&self) -> bool {
-        match &self.value {
-            PossibleArray::Array(_) => true,
-            _ => false,
-        }
-    }
-    fn is_default(&self) -> bool {
-        match &self.value {
-            PossibleArray::Value(v) => v.len() == 0,
-            PossibleArray::Array(v) => v.len() == 0,
-        }        
-    }    
-    fn set_array(&mut self) {
-        self.value = PossibleArray::Array(Vec::new())
-    }
-    fn clone(&self) -> Self {
-        StringType {
-            value: self.value.clone(),
-            enum_values: self.enum_values.clone(),
-        }
-    }
-    fn value_to_string(&self) -> String {
-        let mut res = String::new();
-        match &self.value {
-            PossibleArray::Array(arr) => {
-                res.push_str("[\"");
-                res.push_str(&arr.join("\", \""));
-                res.push_str("\"]");
-            },
-            PossibleArray::Value(val) => {
-                res.push_str(&format!("\"{}\"", val));
-            },
-        }
-        return res;
-    }
-}
-
-impl StringType {
-
     pub fn check_enum(&self, val: &String) -> bool {
         match &self.enum_values {
             Some(vals) => vals.check(&val),
@@ -124,33 +86,6 @@ impl StringType {
     }
 }
 
-pub trait Numeric: Copy + 
-                Clone +
-                PartialOrd + 
-                PartialEq + 
-                std::string::ToString {
-    fn zero() -> Self;
-    fn name() -> &'static str;
-}
-
-impl Numeric for i64 {
-    fn zero() -> Self {
-        0 as Self
-    }
-    fn name() -> &'static str {
-        "integer"
-    }
-}
-
-impl Numeric for f64 {
-    fn zero() -> Self {
-        0.0 as Self
-    }
-    fn name() -> &'static str {
-        "floating"
-    }
-}
-
 #[derive(Clone)]
 pub struct NumberType<T: Clone> {
     value: PossibleArray<T>,
@@ -158,50 +93,14 @@ pub struct NumberType<T: Clone> {
     enum_values: Option<Enum<T>>,
 }
 
-impl<T> ObjectBase for NumberType<T> where T: Numeric, T: Clone { 
-    fn new() -> NumberType<T> {
+impl <T> NumberType<T> where T: Numeric {
+    pub fn new() -> NumberType<T> {
         NumberType {
             value: PossibleArray::Value(T::zero()),
             min_max: Interval::none(),
             enum_values: None,
         }
     }
-    fn is_array(&self) -> bool {
-        match &self.value {
-            PossibleArray::Array(_) => true,
-            _ => false,
-        }
-    }
-    fn is_default(&self) -> bool {
-        match &self.value {
-            PossibleArray::Value(v) => *v == T::zero(),
-            PossibleArray::Array(v) => v.len() == 0,
-        }        
-    }    
-    fn set_array(&mut self) {
-        self.value = PossibleArray::Array(Vec::new())
-    }
-    fn clone(&self) -> Self {
-        NumberType::new()
-    }
-    fn value_to_string(&self) -> String {
-        let mut res = String::new();
-        match &self.value {
-            PossibleArray::Array(arr) => {
-                res.push_str("[");
-                res.push_str(&utils::string_join(&arr, ", "));
-                res.push_str("]"); 
-            },
-            PossibleArray::Value(val) => {
-                res.push_str(&format!("{:.8}", &val.to_string()));
-            },
-        }
-        return res;
-    }
-}
-
-impl <T> NumberType<T> where T: Numeric {
-
     pub fn add_value(&mut self, value: T) {
         self.value.add_value(value);
     }
@@ -211,6 +110,18 @@ impl <T> NumberType<T> where T: Numeric {
             Some(vals) => vals.check(&val),
             None => true,
         }
+    }
+
+    pub fn value(&self) -> &PossibleArray<T> {
+        &self.value
+    }
+
+    pub fn set_value(&mut self, val: PossibleArray<T>) {
+        self.value = val;
+    }
+
+    pub fn interval(&self) -> &Interval<T> {
+        &self.min_max
     }
 
     pub fn check_minmax(&self, val: T) -> bool {
@@ -299,40 +210,6 @@ impl BooleanType {
     }
 }
 
-impl ObjectBase for BooleanType {
-    fn new() -> Self {
-        BooleanType::new()
-    }
-    fn is_array(&self) -> bool {
-        self.value.is_array()
-    }
-    fn set_array(&mut self) {
-        self.value = PossibleArray::Array(Vec::new());
-    }
-    fn is_default(&self) -> bool {
-        match &self.value {
-            PossibleArray::Value(v) => !*v,
-            PossibleArray::Array(v) => v.len() == 0,
-        }
-    }
-    fn clone(&self) -> Self {
-        BooleanType::new()
-    }
-    fn value_to_string(&self) -> String {
-        let mut res = String::new();
-        match &self.value {
-            PossibleArray::Array(arr) => {
-                res.push_str("["); 
-                res.push_str(&utils::string_join(&arr, ", "));
-                res.push_str("]");
-            },
-            PossibleArray::Value(val) => {
-                res.push_str(&format!("{}", val));
-            },
-        }
-        return res;
-    }
-}
 
 #[derive(Clone)]
 pub struct ObjectType {
@@ -362,6 +239,16 @@ impl ObjectType {
     pub fn add_value(&mut self, value: ObjectType) {
         self.value.add_value(Box::new(Some(value)))
     }
+
+    pub fn fields(&self) -> &HashMap<String, FieldType> {
+        &self.fields
+    }
+    pub fn value(&self) -> &PossibleArray<Box<Option<ObjectType>>> {
+        &self.value
+    }
+    pub fn set_value(&mut self, val: PossibleArray<Box<Option<ObjectType>>>) {
+        self.value = val;
+    } 
 
     pub fn get_field(&self, key: &str) -> Option<&FieldType> {
         self.fields.get(key)
@@ -406,56 +293,6 @@ impl ObjectType {
     }
 }
 
-impl ObjectBase for ObjectType {
-    fn new() -> Self {
-        ObjectType::new()
-    }
-    fn is_array(&self) -> bool {
-        self.value.is_array()
-    }
-    fn is_default(&self) -> bool {
-        match &self.value {
-            PossibleArray::Value(v) => false,
-            PossibleArray::Array(v) => v.len() == 0,
-        }
-    }    
-    fn set_array(&mut self) {
-        self.value = PossibleArray::Array(Vec::new());
-    }
-    fn clone(&self) -> Self {
-        ObjectType::new()
-    }
-    fn value_to_string(&self) -> String {
-        let mut res = String::new();
-        match &self.value {
-            PossibleArray::Array(arr) => {
-            let values: Vec<String> = (**arr)
-                .iter()
-                .map(|x| {
-                    match &**x {
-                        Some(expr) => expr.value_to_string(),
-                        None => String::new(),
-                    }
-                }).collect();
-                res.push_str("[");
-                res.push_str(&values.join(", "));
-                res.push_str("]");
-            },
-            PossibleArray::Value(val) => {
-                res.push_str("{");
-                let field_info: Vec<String> = self.fields
-                    .iter()
-                    .map(|(k, v)| {
-                        String::from(k) + " = " + &v.value().value_to_string()
-                    }
-                ).collect();
-                res.push_str(&field_info.join(", "));
-                res.push_str("}");
-            },
-        }
-        return res;
-    }
-}
 
 #[derive(Clone)]
 pub enum Element {
@@ -471,7 +308,7 @@ impl Element {
     pub fn clone(&self) -> Element {
         Element::None
     }
-    fn value_to_string(&self) -> String {
+    pub fn value_to_string(&self) -> String {
         match &self {
             Element::None => "".to_string(),
             Element::String(v) => { object_value_to_string(v) },

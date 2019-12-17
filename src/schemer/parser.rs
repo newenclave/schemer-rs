@@ -155,7 +155,7 @@ mod helpers {
     }
 
     fn create_same_object<T: ObjectBase>(val: &T) -> T {
-        let mut res = T::new();
+        let mut res = T::create();
         if val.is_array() {
             res.set_array();
         }
@@ -406,7 +406,8 @@ impl Parser {
                     panic!("Field '{}' is already defined in onject.", element.name());
                 }
                 result.add_field(element);
-                self.expect(&Token::is_special(SpecialToken::Semicolon));
+                self.expect(&Token::is_special(SpecialToken::Semicolon)) ||
+                self.expect(&Token::is_special(SpecialToken::Comma));
             } 
             self.read_value(&mut result);
         }

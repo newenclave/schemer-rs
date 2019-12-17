@@ -100,3 +100,30 @@ impl<T> PossibleArray<T> where T: Clone {
         }
     }
 }
+
+pub trait Numeric: Copy + 
+                Clone +
+                PartialOrd + 
+                PartialEq + 
+                std::string::ToString {
+    fn zero() -> Self;
+    fn name() -> &'static str;
+}
+
+impl Numeric for i64 {
+    fn zero() -> Self {
+        0 as Self
+    }
+    fn name() -> &'static str {
+        "integer"
+    }
+}
+
+impl Numeric for f64 {
+    fn zero() -> Self {
+        0.0 as Self
+    }
+    fn name() -> &'static str {
+        "floating"
+    }
+}
