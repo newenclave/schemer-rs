@@ -2,6 +2,8 @@
 
 use std::collections::HashMap;
 use std::ops::{Add, Sub};
+use super::helpers::*;
+use super::object_base::*;
 
 mod utils {
     pub fn string_join<T: std::string::ToString>(vals: &Vec<T>, sep: &str) -> String {
@@ -28,114 +30,6 @@ impl Options {
     }
 }
 
-#[derive(Clone)]
-struct Interval<T: Clone> {
-    min_max: (Option<T>, Option<T>),
-}
-
-impl<T> Interval<T> where T: std::cmp::PartialOrd + Copy {
-    pub fn new(min: Option<T>, max: Option<T>) -> Interval<T> {
-        Interval {
-            min_max: (min, max)
-        }
-    }
-    pub fn none() -> Interval<T> {
-        Interval {
-            min_max: (None, None)
-        }
-    }
-    pub fn check(&self, val: T) -> bool {
-        return match &self.min_max.0 {
-            Some(min_val) => *min_val <= val,
-            None => true,
-        } && match &self.min_max.1 {
-            Some(max_val) => val <= *max_val,
-            None => true,
-        }
-    }
-    pub fn set_min(&mut self, val: T) {
-        self.min_max.0 = Some(val);
-    }
-    pub fn set_max(&mut self, val: T) {
-        self.min_max.1 = Some(val);
-    }
-
-    pub fn has_min(&self) -> bool {
-        !self.min_max.0.is_none()
-    }
-    pub fn has_max(&self) -> bool {
-        !self.min_max.1.is_none()
-    }
-    pub fn has_minmax(&self) -> bool {
-        self.has_min() || self.has_max()
-    }
-    pub fn min(&self, default: T) -> T {
-        match &self.min_max.0 {
-            Some(val) => *val,
-            None => default,
-        }
-    }
-    pub fn max(&self, default: T) -> T {
-        match &self.min_max.1 {
-            Some(val) => *val,
-            None => default,
-        }
-    }
-}
-
-#[derive(Clone)]
-struct Enum<T: Clone> {
-    values: Vec<T>
-}
-
-impl<T> Enum<T> where T: std::cmp::PartialEq + Clone {
-    pub fn new() -> Enum<T> {
-        Enum {
-            values: Vec::new(),
-        }
-    }
-    pub fn check(&self, val: &T) -> bool {
-        !self.values.iter().find(|&x| *val == *x).is_none()
-    }
-    pub fn try_add(&mut self, val: T) -> bool {
-        if self.check(&val) {
-            false
-        } else {
-            self.values.push(val);
-            true
-        }
-    }
-}
-
-#[derive(Clone)]
-enum PossibleArray<T: Clone> {
-    Value(T),
-    Array(Vec<T>),
-}
-
-impl<T> PossibleArray<T> where T: Clone {
-    pub fn add_value(&mut self, value: T) {
-        match self {
-            PossibleArray::Value(val) => { *val = value },
-            PossibleArray::Array(vec) => { vec.push(value) },
-        }
-    }
-    pub fn is_array(&self) -> bool {
-        match self {
-            PossibleArray::Value(_) => false,
-            PossibleArray::Array(_) => true,
-        }
-    }
-} 
-
-pub trait ObjectBase {
-    fn new() -> Self;
-    fn is_array(&self) -> bool;
-    fn set_array(&mut self);
-    fn clone(&self) -> Self;
-    fn value_to_string(&self) -> String;
-}
-
 fn object_value_to_string<T: ObjectBase>(obj: &T) -> String {
     obj.value_to_string()
 }
@@ -159,6 +53,12 @@ impl ObjectBase for StringType {
             _ => false,
         }
     }
+    fn is_default(&self) -> bool {
+        match &self.value {
+            PossibleArray::Value(v) => v.len() == 0,
+            PossibleArray::Array(v) => v.len() == 0,
+        }        
+    }    
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new())
     }
@@ -191,6 +91,14 @@ impl StringType {
             Some(vals) => vals.check(&val),
             None => true,
         }
+    }
+
+    pub fn value(&self) -> &PossibleArray<String> {
+        &self.value
+    }
+
+    pub fn set_value(&mut self, val: PossibleArray<String>) {
+        self.value = val;
     }
 
     pub fn add_value(&mut self, value: &str) {
@@ -264,6 +172,12 @@ impl<T> ObjectBase for NumberType<T> where T: Numeric, T: Clone {
             _ => false,
         }
     }
+    fn is_default(&self) -> bool {
+        match &self.value {
+            PossibleArray::Value(v) => *v == T::zero(),
+            PossibleArray::Array(v) => v.len() == 0,
+        }        
+    }    
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new())
     }
@@ -279,7 +193,7 @@ impl<T> ObjectBase for NumberType<T> where T: Numeric, T: Clone {
                 res.push_str("]"); 
             },
             PossibleArray::Value(val) => {
-                res.push_str(&format!("{:.4}", &val.to_string()));
+                res.push_str(&format!("{:.8}", &val.to_string()));
             },
         }
         return res;
@@ -358,6 +272,14 @@ impl BooleanType {
         self.value.add_value(value);
     }
 
+    pub fn value(&self) -> &PossibleArray<bool> {
+        &self.value
+    }
+
+    pub fn set_value(&mut self, val: PossibleArray<bool>) {
+        self.value = val;
+    }
+
     pub fn to_string(&self, start: usize) -> String {
         let mut res = String::from("boolean");
         let empty = match &self.value {
@@ -386,6 +308,12 @@ impl ObjectBase for BooleanType {
     }
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new());
+    }
+    fn is_default(&self) -> bool {
+        match &self.value {
+            PossibleArray::Value(v) => !*v,
+            PossibleArray::Array(v) => v.len() == 0,
+        }
     }
     fn clone(&self) -> Self {
         BooleanType::new()
@@ -485,6 +413,12 @@ impl ObjectBase for ObjectType {
     fn is_array(&self) -> bool {
         self.value.is_array()
     }
+    fn is_default(&self) -> bool {
+        match &self.value {
+            PossibleArray::Value(v) => false,
+            PossibleArray::Array(v) => v.len() == 0,
+        }
+    }    
     fn set_array(&mut self) {
         self.value = PossibleArray::Array(Vec::new());
     }

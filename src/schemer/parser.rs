@@ -2,6 +2,7 @@
 
 use super::tokens::{TokenInfo, Token, SpecialToken, TypeName};
 use super::objects::*;
+use super::object_base::*;
 
 pub struct ParserState {
     current: usize,

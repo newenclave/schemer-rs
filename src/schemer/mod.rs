@@ -5,3 +5,5 @@ pub mod lexer;
 pub mod tokens;
 pub mod objects;
 pub mod parser;
+pub mod helpers;
+pub mod object_base;
