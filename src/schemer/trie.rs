@@ -22,30 +22,33 @@ impl<T> Trie<T> {
         let mut last: Option<&T> = None;
         let mut last_shift: usize = 0;
         let mut shift: usize = 0;
-        let other = data.backup();
+        let mut other = data.backup();
 
         while !data.eol() {
             let c = data.top();
             let next = root.children.get(&c);
+            let mut last_set = false;
             match next {
                 Some(expr) => {
                     root = &expr;
                     if !root.data.is_none() {
                         last = root.value_ref();
-                        last_shift = shift + c.len_utf8();
+                        last_set = true;
                     }
                 },
                 None => break,
             }
             shift += data.advance();
+            if last_set {
+                last_shift = shift;
+                other = data.backup();
+            }
         }
 
+        data.restore(&other); 
         return match last {
             Some(expr) => Some((expr, last_shift)),
-            None => { 
-                data.restore(&other); 
-                None 
-            }
+            None => None,
         }
     }
 

@@ -27,7 +27,7 @@ main: object[] {
     test: object[] {
         name: string = \"123\"
         value: integer 1..100
-    } = [{ name = \"test name\", \"value\" = 50 }, {}, {}]
+    } = [{ name: \"test name\", \"value\": 50 }, {}, {}]
     ".to_string();
     let lex = Lexer::new();
     let vec = lex.run(&val);

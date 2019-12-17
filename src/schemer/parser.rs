@@ -153,6 +153,14 @@ mod helpers {
         }
     }
 
+    fn create_same_object<T: ObjectBase>(val: &T) -> T {
+        let mut res = T::new();
+        if val.is_array() {
+            res.set_array();
+        }
+        return res;
+    }
+
     impl ValueReadCheck for ObjectType {
         fn token_checker(val: &Token) -> bool {
             Token::is_special(SpecialToken::LBrace)(val)
@@ -187,34 +195,22 @@ mod helpers {
                                 next.add_field(FieldType::new(field_name, Element::Str(val)));
                             },
                             Element::Integer(v) => {
-                                let mut val = IntegerType::new();
-                                if v.is_array() {
-                                    val.set_array();
-                                }
+                                let mut val = create_same_object(v);
                                 parser.read_value(&mut val);
                                 next.add_field(FieldType::new(field_name, Element::Integer(val)));
                             },
                             Element::Floating(v) => {
-                                let mut val = FloatingType::new();
-                                if v.is_array() {
-                                    val.set_array();
-                                }
+                                let mut val = create_same_object(v);
                                 parser.read_value(&mut val);
                                 next.add_field(FieldType::new(field_name, Element::Floating(val)));
                             },
                             Element::Boolean(v) => { 
-                                let mut val = BooleanType::new();
-                                if v.is_array() {
-                                    val.set_array();
-                                }
+                                let mut val = create_same_object(v);
                                 parser.read_value(&mut val);
                                 next.add_field(FieldType::new(field_name, Element::Boolean(val)));
                             },
                             Element::Object(v) => { 
-                                let mut val = ObjectType::new();
-                                if v.is_array() {
-                                    val.set_array();
-                                }
+                                let mut val = create_same_object(v);
                                 val.set_fields(v.clone_fields());
                                 parser.read_value(&mut val);
                                 next.add_field(FieldType::new(field_name, Element::Object(val)));
@@ -362,7 +358,7 @@ impl Parser {
     }
 
     fn read_value<T: helpers::ValueReadCheck + ObjectBase>(&mut self, output: &mut T) {
-        if self.expect(&Token::is_special(SpecialToken::Equal)) {
+        if self.expect(&Token::is_special(SpecialToken::Equal)) || self.expect(&Token::is_special(SpecialToken::Colon)) {
             self.read_value_nocheck(output);
         }
     }
