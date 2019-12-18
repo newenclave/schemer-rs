@@ -1,0 +1,5 @@
+main(readonly, random = 42): object[] {
+    nested(nested: true): object {
+        i: integer = 42
+    }
+}

@@ -4,13 +4,24 @@ use super::objects::*;
 use super::object_base::*;
 use super::helpers::*;
 
-static SHIFT: &'static str = "  ";
 
 mod utils {
+    static SHIFT: &'static str = "  ";
     pub fn string_join<T: std::string::ToString>(vals: &Vec<T>, sep: &str) -> String {
         vals.iter().map(|v|{
             v.to_string()
         }).collect::<Vec<String>>().join(sep)
+    }
+    pub fn sh(shift: usize) -> String {
+        SHIFT.repeat(shift)
+    }
+    pub fn is_ident_string(val: &str) -> bool {
+        !val.chars().find(|c| {
+            !(c.is_ascii_alphabetic() || c.is_digit(10) || *c == '_') 
+        }).is_none()
+    }
+    pub fn quote(val: &str) -> String {
+        return if is_ident_string(val) { format!("\"{}\"", val) } else { val.to_string() }
     }
 }
 
@@ -83,39 +94,60 @@ impl<T> ToSchemerString for NumberType<T> where T: Numeric, T: Clone {
 
 impl ToSchemerString for ObjectType {
     fn field_to(&self, shift: usize) -> String {
-        let fields: Vec<String> = self.fields()
+        let fields = self.fields()
             .iter()
             .map(|(_, v)| {
                 field_to_string_impl(v, shift + 1)
-            }).collect();
+            }).collect::<Vec<String>>().join(",\n");
         format!("object{} {{\n{}\n{}}}", 
             if self.is_array() { "[]" } else { "" },
-            fields.join(",\n"),
-            SHIFT.repeat(shift)
+            fields,
+            utils::sh(shift)
         )
     }
     fn value_to(&self, shift: usize) -> String {
         match self.value() {
             PossibleArray::Array(arr) => {
-            let values: Vec<String> = (**arr)
-                .iter()
-                .map(|x| {
+            let values = (**arr)
+                .iter().map(|x| {
                     match &**x {
                         Some(field) => cast(field).value_to(shift + 1),
                         None => String::new(),
                     }
-                }).collect();
-                format!("[\n{}\n{}]", values.join(", "), SHIFT.repeat(shift))
+                }).collect::<Vec<String>>().join(", ");
+                format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
             },
             PossibleArray::Value(val) => {
-                let field_info: Vec<String> = self.fields()
-                    .iter()
-                    .map(|(k, v)| {
+                let field_info = self.fields()
+                    .iter().map(|(k, v)| {
                         values_to_string(v, shift + 1)
                     }
-                ).collect();
-                format!("{{\n{}\n{}}}", &field_info.join(",\n"), SHIFT.repeat(shift))
+                ).collect::<Vec<String>>().join(",\n");
+                format!("{{\n{}\n{}}}", &field_info, utils::sh(shift))
             },
+        }
+    }
+}
+
+impl ToSchemerString for Element {
+    fn field_to(&self, shift: usize) -> String {
+        match &self {
+            Element::Boolean(v) => { cast(v).field_to(shift) },
+            Element::String(v) => { cast(v).field_to(shift) },
+            Element::Integer(v) => { cast(v).field_to(shift) },
+            Element::Floating(v) => { cast(v).field_to(shift) },
+            Element::Object(v) => { cast(v).field_to(shift) },
+            _ => "".to_string(),
+        }
+    }
+    fn value_to(&self, shift: usize) -> String {
+        match &self {
+            Element::Boolean(v) => { cast(v).value_to(shift) },
+            Element::String(v) => { cast(v).value_to(shift) },
+            Element::Integer(v) => { cast(v).value_to(shift) },
+            Element::Floating(v) => { cast(v).value_to(shift) },
+            Element::Object(v) => { cast(v).value_to(shift) },
+            _ => "".to_string(),
         }
     }
 }
@@ -128,9 +160,23 @@ fn field_values_to_string<T: ObjectBase + ToSchemerString>(val: &T, shift: usize
     }
 }
 
+fn options_to_string(opts: &Options) -> String {
+    if opts.empty() {
+        String::new()
+    } else {
+        format!("({})", opts.all()
+            .iter().map(|(k, v)|{
+                format!("{}: {}", k, cast(v).value_to(0))
+            }).collect::<Vec<String>>().join(", ")
+        )
+    }
+}
+
+
 fn field_to_string_impl(val: &FieldType, shift: usize) -> String {
-    format!("{}{}: {}", SHIFT.repeat(shift), 
-        val.name(), 
+    format!("{}{}{}: {}", utils::sh(shift), 
+        &utils::quote(val.name()), 
+        &options_to_string(&val.options()),
         match val.value() {
             Element::Boolean(v) => { field_values_to_string(v, shift, false) },
             Element::String(v) => { field_values_to_string(v, shift, false) },
@@ -143,16 +189,9 @@ fn field_to_string_impl(val: &FieldType, shift: usize) -> String {
 }
 
 fn values_to_string(val: &FieldType, shift: usize) -> String {
-    format!("{}{}: {}", SHIFT.repeat(shift), 
-        val.name(), 
-        match val.value() {
-            Element::Boolean(v) => { cast(v).value_to(shift) },
-            Element::String(v) => { cast(v).value_to(shift) },
-            Element::Integer(v) => { cast(v).value_to(shift) },
-            Element::Floating(v) => { cast(v).value_to(shift) },
-            Element::Object(v) => { cast(v).value_to(shift) },
-            _ => "".to_string(),            
-        }
+    format!("{}{}: {}", utils::sh(shift), 
+        utils::quote(val.name()),
+        cast(val.value()).value_to(shift)
     )
 }
 

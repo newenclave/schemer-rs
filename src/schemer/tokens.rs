@@ -42,45 +42,46 @@ pub enum Token {
 }
 
 impl Token {
-    pub fn is_ident() -> impl Fn(&Token) -> bool {
-        |tok: &Token| match tok {
+    pub fn is_ident(&self) -> bool {
+        match self {
             Token::Ident(_) => true,
             _ => false
         }
     }
-    pub fn is_floating() -> impl Fn(&Token) -> bool {
-        |tok: &Token| match tok {
+    pub fn is_floating(&self) -> bool {
+        match self {
             Token::Floating(_) => true,
             _ => false
         }
     }
-    pub fn is_integer() -> impl Fn(&Token) -> bool {
-        |tok: &Token| match tok {
+    pub fn is_integer(&self) -> bool {
+        match self {
             Token::Integer(_) => true,
             _ => false
         }
     }
-    pub fn is_number() -> impl Fn(&Token) -> bool {
-        |tok: &Token| match tok {
+    pub fn is_number(&self) -> bool {
+        match self {
             Token::Integer(_) => true,
             Token::Floating(_) => true,
             _ => false
         }
     }
-    pub fn is_string() -> impl Fn(&Token) -> bool {
-        |tok: &Token| match tok {
+    pub fn is_string(&self) -> bool {
+        match self {
             Token::String(_) => true,
             _ => false
         }
     }
-    pub fn is_boolean() -> impl Fn(&Token) -> bool {
-        |tok: &Token| match tok {
+
+    pub fn is_boolean(&self) -> bool {
+        match self {
             Token::Boolean(_) => true,
             _ => false
         }
     }
-    pub fn is_eof() -> impl Fn(&Token) -> bool {
-        |tok: &Token| match tok {
+    pub fn is_eof(&self) -> bool {
+        match self {
             Token::Eof => true,
             _ => false
         }
@@ -93,8 +94,8 @@ impl Token {
             _ => false
         }
     }
-    pub fn is_type() -> impl Fn(&Token) -> bool {
-        |tok: &Token| match tok {
+    pub fn is_type(&self) -> bool {
+        match self {
             Token::Type(t) => true,
             _ => false
         }

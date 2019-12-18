@@ -3,29 +3,11 @@
 use super::objects::*;
 use super::helpers::*;
 
-
-mod utils {
-    pub fn string_join<T: std::string::ToString>(vals: &Vec<T>, sep: &str) -> String {
-        let mut first = true;
-        let mut res = String::new();
-
-        for v in vals.iter() {
-            if first {
-                first = false;
-            } else {
-                res.push_str(sep);
-            }
-            res.push_str(&v.to_string());
-        }
-        return res;
-    }
-}
-
 pub trait ObjectBase {
     fn create() -> Self;
     fn is_array(&self) -> bool;
     fn is_default(&self) -> bool;
-    fn set_array(&mut self);
+    fn make_array(&mut self);
 }
 
 impl ObjectBase for StringType {
@@ -44,7 +26,7 @@ impl ObjectBase for StringType {
             PossibleArray::Array(v) => v.len() == 0,
         }        
     }    
-    fn set_array(&mut self) {
+    fn make_array(&mut self) {
         self.set_value(PossibleArray::Array(Vec::new()))
     }
 }
@@ -56,7 +38,7 @@ impl ObjectBase for BooleanType {
     fn is_array(&self) -> bool {
         self.value().is_array()
     }
-    fn set_array(&mut self) {
+    fn make_array(&mut self) {
         self.set_value(PossibleArray::Array(Vec::new()));
     }
     fn is_default(&self) -> bool {
@@ -80,7 +62,7 @@ impl ObjectBase for ObjectType {
             PossibleArray::Array(v) => v.len() == 0,
         }
     }    
-    fn set_array(&mut self) {
+    fn make_array(&mut self) {
         self.set_value(PossibleArray::Array(Vec::new()));
     }
 }
@@ -98,7 +80,7 @@ impl<T> ObjectBase for NumberType<T> where T: Numeric, T: Clone {
             PossibleArray::Array(v) => v.len() == 0,
         }
     }
-    fn set_array(&mut self) {
+    fn make_array(&mut self) {
         self.set_value(PossibleArray::Array(Vec::new()));
     }
 }

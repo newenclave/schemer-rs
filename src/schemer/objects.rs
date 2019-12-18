@@ -6,14 +6,6 @@ use super::helpers::*;
 use super::object_base::*;
 
 #[derive(Clone)]
-pub struct Options {}
-impl Options {
-    pub fn new() -> Options {
-        Options{}
-    }
-}
-
-#[derive(Clone)]
 pub struct StringType {
     value: PossibleArray<String>,
     enum_values: Option<Enum<String>>,
@@ -112,6 +104,11 @@ impl BooleanType {
             value: PossibleArray::Value(false),
         }
     }
+    pub fn from(val: bool) -> BooleanType {
+        BooleanType{
+            value: PossibleArray::Value(val),
+        }
+    }
     pub fn add_value(&mut self, value: bool) {
         self.value.add_value(value);
     }
@@ -124,7 +121,6 @@ impl BooleanType {
         self.value = val;
     }
 }
-
 
 #[derive(Clone)]
 pub struct ObjectType {
@@ -189,22 +185,57 @@ pub enum Element {
 }
 
 #[derive(Clone)]
+pub struct Options {
+    values: HashMap<String, Element>
+}
+impl Options {
+    pub fn new() -> Options {
+        Options {
+            values: HashMap::new(),
+        }
+    }
+    pub fn empty(&self) -> bool {
+        self.values.len() == 0
+    }
+    pub fn add(&mut self, key: &str, value: Element) {
+        self.values.insert(key.to_string(), value);
+    }
+    pub fn has(&self, key: &str) -> bool {
+        !self.get(key).is_none()
+    }
+    pub fn get(&self, key: &str) -> Option<&Element> {
+        self.values.get(key)
+    }
+    pub fn all(&self) -> &HashMap<String, Element> {
+        &self.values
+    }
+}
+
+#[derive(Clone)]
 pub struct FieldType {
     value: Element,
     name: String,
+    opts: Options,
 }
 
 impl FieldType {
-    pub fn new(name: String, value: Element) -> FieldType {
+    pub fn new(name: String, value: Element, opts: Options) -> FieldType {
         FieldType{
             value: value,
             name: String::from(name),
+            opts: opts,
         }
     }
     pub fn value<'a>(&'a self) -> &'a Element {
         return &self.value
     }
-    pub fn name<'a>(&'a self) -> &'a str {
+    pub fn name(&self) -> &str {
         return &self.name
+    }
+    pub fn options(&self) -> &Options {
+        &self.opts
+    }
+    pub fn empty_options(&self) -> bool {
+        self.opts.empty()
     }
 }

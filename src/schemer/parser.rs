@@ -71,7 +71,7 @@ mod helpers {
 
     impl ValueReadCheck for StringType {
         fn token_checker(val: &Token) -> bool {
-            Token::is_string()(val)
+            val.is_string()
         }
 
         fn expected() -> &'static str {
@@ -93,7 +93,7 @@ mod helpers {
     
     impl ValueReadCheck for IntegerType {
         fn token_checker(val: &Token) -> bool {
-            Token::is_integer()(val)
+            val.is_integer()
         }
         fn expected() -> &'static str {
             "integer"
@@ -116,7 +116,7 @@ mod helpers {
 
     impl ValueReadCheck for FloatingType {
         fn token_checker(val: &Token) -> bool {
-            Token::is_number()(val)
+            val.is_number()
         }
         fn expected() -> &'static str {
             "floating or integer"
@@ -139,7 +139,7 @@ mod helpers {
 
     impl ValueReadCheck for BooleanType {
         fn token_checker(val: &Token) -> bool {
-            Token::is_boolean()(val)
+            val.is_boolean()
         }
         fn expected() -> &'static str {
             "true or false"
@@ -157,7 +157,7 @@ mod helpers {
     fn create_same_object<T: ObjectBase>(val: &T) -> T {
         let mut res = T::create();
         if val.is_array() {
-            res.set_array();
+            res.make_array();
         }
         return res;
     }
@@ -185,36 +185,34 @@ mod helpers {
                 let field = self.get_field(&field_name);
                 match field {
                     Some(value) => {
+                        let opts = Options::new(); //value.options().clone();
                         match value.value() {
                             Element::None => (),
                             Element::String(v) => { 
-                                let mut val = StringType::new();
-                                if v.is_array() {
-                                    val.set_array();
-                                }
+                                let mut val = create_same_object(v);
                                 parser.read_value(&mut val);
-                                next.add_field(FieldType::new(field_name, Element::String(val)));
+                                next.add_field(FieldType::new(field_name, Element::String(val), opts));
                             },
                             Element::Integer(v) => {
                                 let mut val = create_same_object(v);
                                 parser.read_value(&mut val);
-                                next.add_field(FieldType::new(field_name, Element::Integer(val)));
+                                next.add_field(FieldType::new(field_name, Element::Integer(val), opts));
                             },
                             Element::Floating(v) => {
                                 let mut val = create_same_object(v);
                                 parser.read_value(&mut val);
-                                next.add_field(FieldType::new(field_name, Element::Floating(val)));
+                                next.add_field(FieldType::new(field_name, Element::Floating(val), opts));
                             },
                             Element::Boolean(v) => { 
                                 let mut val = create_same_object(v);
                                 parser.read_value(&mut val);
-                                next.add_field(FieldType::new(field_name, Element::Boolean(val)));
+                                next.add_field(FieldType::new(field_name, Element::Boolean(val), opts));
                             },
                             Element::Object(v) => { 
                                 let mut val = create_same_object(v);
                                 val.set_fields(v.clone_fields());
                                 parser.read_value(&mut val);
-                                next.add_field(FieldType::new(field_name, Element::Object(val)));
+                                next.add_field(FieldType::new(field_name, Element::Object(val), opts));
                             },
                         }
                     },
@@ -299,7 +297,7 @@ impl Parser {
             if !self.expect(&Token::is_special(SpecialToken::RBracket)) {
                 self.panic_expect("]");
             }
-            result.set_array();
+            result.make_array();
         }
         return result;
     }
@@ -316,7 +314,6 @@ impl Parser {
         }
     }
 
-    /// 
     pub fn parse_string(&mut self) -> StringType {
         let mut result = self.parse_begin(StringType::new());
         self.read_value(&mut result);
@@ -414,8 +411,54 @@ impl Parser {
         return result;
     }
 
+    fn parse_value_for<T: helpers::ValueReadCheck + ObjectBase>(&mut self, mut value: T) -> T {
+        self.read_value_nocheck(&mut value);
+        value
+    }
+
+    fn guess_element(&mut self) -> Element {
+        match &self.next().token() {
+            Token::Integer(_) => { Element::Integer(self.parse_value_for(IntegerType::new())) },
+            Token::Floating(_) => Element::Floating(self.parse_value_for(FloatingType::new())),
+            Token::Boolean(_) => Element::Boolean(self.parse_value_for(BooleanType::new())),
+            Token::String(_) => Element::String(self.parse_value_for(StringType::new())),
+            Token::Special(v) => match v {
+                SpecialToken::LBrace => Element::None,   // object
+                SpecialToken::LBracket => Element::None, // array 
+                _ => Element::None,
+            }
+            _ => Element::None,
+        }
+    }
+
+    fn try_read_options(&mut self) -> Options {
+        let mut result = Options::new();
+        if self.expect(&Token::is_special(SpecialToken::LParen)) {
+            while !self.expect(&Token::is_special(SpecialToken::RParen)) {
+                let (found, name) = self.read_name();
+                if(!found) {
+                    self.panic_expect("ident or string");
+                }
+
+                if self.expect(&Token::is_special(SpecialToken::Equal)) || self.expect(&Token::is_special(SpecialToken::Colon)) {
+                    let element = self.guess_element();
+                    match element {
+                        Element::None => { result.add(&name, Element::Boolean(BooleanType::from(true))) },
+                        _ => { result.add(&name, element) }
+                    } 
+                } else {
+                    result.add(&name, Element::Boolean(BooleanType::from(true)))
+                }
+
+                self.expect(&Token::is_special(SpecialToken::Comma));
+            }
+        }
+        result
+    }
+
     pub fn parse_field(&mut self) -> FieldType {
         let (_, name) = self.read_name();
+        let opts = self.try_read_options();
         if name.len() > 0 && !self.expect(&Token::is_special(SpecialToken::Colon)) {
             self.panic_expect(":");
         }
@@ -430,6 +473,6 @@ impl Parser {
             },
             _ => { self.panic_current("typename"); Element::None }
         };
-        FieldType::new(name, element)
+        FieldType::new(name, element, opts)
     }
 }

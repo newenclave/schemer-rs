@@ -1,0 +1,8 @@
+main(main_option): object {
+    obj(readonly): object {
+        i: integer 1..100 = 50
+    }
+    obj2(some_option: "some_string_value"): object[] {
+        s: string = ""
+    } = [ {"s": "1"}, {"s": "2"}, {s: "3"} ]
+} 

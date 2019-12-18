@@ -1,0 +1,8 @@
+main: object {
+    obj: object {
+        i: integer = 42
+    }
+    obj2: object[] {
+        s: string = ""
+    } = [ {"s": "1"}, {"s": "2"}, {s: "3"} ]
+} 
