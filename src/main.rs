@@ -13,10 +13,10 @@ fn parse_format(obj: &str) {
     let lex = Lexer::new();
     let vec = lex.run(obj);
     let mut pars = Parser::new(Vec::new());
-    match &vec {
+    match vec {
         Err(expr) => println!("Parsing error: {}", expr),
         Ok(v) => {
-            pars = Parser::new(v.to_vec());
+            pars = Parser::new(v);
         },
     };
     
@@ -26,7 +26,6 @@ fn parse_format(obj: &str) {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    println!("{:?}", args);
     if args.len() > 1 {
         let test_object = fs::read_to_string(&args[1]);
         match &test_object {
@@ -44,6 +43,6 @@ fn main() {
         } = [{i: 1}, {i: 2}, {i: 3}]
         ".to_owned();
         parse_format(&v);
-        // /println!("Use: schemer-rs <path_to_scheme_file>")
+        println!("Use: schemer-rs <path_to_scheme_file>")
     }
 }

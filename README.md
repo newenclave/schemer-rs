@@ -100,3 +100,4 @@ Also i'm gonna add eamples. See `test_data` directory.
 - [ ] add `enum` for strings, numbers
 - [ ] add `pattern` for strings
 - [ ] remove `unused` and clean the code out of unused
+- [ ] adding json generators
