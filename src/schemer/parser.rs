@@ -480,6 +480,19 @@ impl Parser {
         return result;
     }
 
+    // any is a very special case
+    pub fn parse_any(&mut self) -> AnyType {
+        let mut result = AnyType::new();
+        if self.expect(&Token::is_special(SpecialToken::Equal)) ||
+        self.expect(&Token::is_special(SpecialToken::Colon)) {
+            result.add_value(self.guess_element());
+        } else {
+            self.panic_expect("= or :")
+        }
+        result
+
+    }
+
     fn parse_value_for<T: helpers::ValueReadCheck + ObjectBase>(&mut self, mut value: T) -> T {
         self.read_value_nocheck(&mut value);
         value
@@ -580,6 +593,7 @@ impl Parser {
                 TypeName::TypeFloating => Element::Floating(self.parse_floating()),
                 TypeName::TypeBoolean => Element::Boolean(self.parse_boolean()),
                 TypeName::TypeObject => Element::Object(self.parse_object()),
+                TypeName::TypeAny => Element::Any(self.parse_any()),
             },
             _ => { self.panic_current("typename"); Element::None }
         };

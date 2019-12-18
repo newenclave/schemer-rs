@@ -29,6 +29,7 @@ pub enum TypeName {
     TypeFloating, // floating
     TypeBoolean, // boolean
     TypeObject, // object
+    TypeAny, // any
 }
 
 #[derive(Clone, PartialEq)]
@@ -144,6 +145,7 @@ impl TokenInfo {
                 TypeName::TypeFloating => "floating".to_string(),
                 TypeName::TypeBoolean => "boolean".to_string(),
                 TypeName::TypeObject => "object".to_string(),
+                TypeName::TypeAny => "any".to_string(),
             }
             Token::Special(spec) => match spec { 
                 SpecialToken::LParen => "(".to_string(),

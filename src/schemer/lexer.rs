@@ -189,6 +189,7 @@ impl Lexer {
         lex.add_type("floating", TypeName::TypeFloating);
         lex.add_type("boolean", TypeName::TypeBoolean);
         lex.add_type("object", TypeName::TypeObject);
+        lex.add_type("any", TypeName::TypeAny);
         
         lex.add("true", Token::Boolean(true));
         lex.add("false", Token::Boolean(false));

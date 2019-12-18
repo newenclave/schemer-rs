@@ -36,9 +36,13 @@ fn main() {
         }
     } else {
         let v = "
-        main(aaa: [1, 4.5, \"help\", [1, 2, 3]]): object[] {
-            i: integer 1..3 enum { 1, 2, 3 } = 1
-            s: string enum {\"empty\"}
+        main: any = {
+            data: \"string value\",
+            i: 1000,
+            f: 0.5,
+            a: true,
+            b: false,
+            n: null
         }
         ".to_owned();
         parse_format(&v);

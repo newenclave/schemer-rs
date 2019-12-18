@@ -218,7 +218,7 @@ impl ToSchemerString for Element {
             Element::Floating(v) => { cast(v).value_to(shift) },
             Element::Object(v) => { cast(v).value_to(shift) },
             Element::Any(v) => { cast(v).value_to(shift) },
-            Element::None => "".to_string(),
+            Element::None => "null".to_string(),
         }
     }
 }

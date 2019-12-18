@@ -92,10 +92,7 @@ impl ObjectBase for AnyType {
         self.value().is_array()
     }
     fn is_default(&self) -> bool {
-        match self.value() {
-            PossibleArray::Value(v) => !v.is_none(),
-            PossibleArray::Array(v) => v.len() == 0,
-        }
+        false
     }
     fn make_array(&mut self) {
         self.set_value(PossibleArray::Array(Vec::new()));
