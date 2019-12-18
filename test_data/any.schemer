@@ -1,0 +1,15 @@
+main: object {
+    valid_any: any = {         # it's possible to define any
+        data: "string value",
+        i: 1000,
+        f: 0.5,
+        a: true,
+        b: false,
+        n: null,
+        aa: {
+            some_nested: {}
+        }
+    };
+    valid_any_array: any = [];      # any is a spetial keyword, not a typename
+    #invalid_any_array: any[] = []; # any array cannot be defined with [] 
+}

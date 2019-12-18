@@ -42,7 +42,8 @@ fn main() {
             f: 0.5,
             a: true,
             b: false,
-            n: null
+            n: null,
+            aa: {}
         }
         ".to_owned();
         parse_format(&v);
