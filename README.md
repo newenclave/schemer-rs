@@ -10,7 +10,7 @@ it's written in Rust as an "helloworld" pet project. So with this project I want
 
 ### how does it work?
 
-You give schemer file, it return json schema. But for now there is no json generator. So it just parses the own schema and generates the same schema.
+You give schemer file, it returns json schema. But for now there is no json generator. So it just parses the own schema and generates the same schema.
 
 ### depends?
 
@@ -29,9 +29,9 @@ object_name(options): type[] = value
 ```
 
 Here:
-`object_name` - any valid ident value or string with double quotes.--
-`(option)` - option list belongs to field--
-`type` - one of `string`, `integer`, `floating`, `Boolean`, `object`. Probably aliases will be added soon. Any field can be an array. `[]`--
+`object_name` - any valid ident value or string with double quotes.
+`(option)` - option list belongs to field
+`type` - one of `string`, `integer`, `floating`, `Boolean`, `object`. Probably aliases will be added soon. Any field can be an array. `[]`
 
 ### Examples?
 
