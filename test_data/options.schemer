@@ -4,5 +4,6 @@ main(main_option): object {
     }
     obj2(some_option: "some_string_value"): object[] {
         s: string = ""
-    } = [ {"s": "1"}, {"s": "2"}, {s: "3"} ]
-} 
+    } = [ {"s": "1"}, {"s": "2"}, {s: "3"} ], 
+    obj3(json_opt: { field1: 1, field2: "!", field3: {} }): boolean;
+}

@@ -408,7 +408,8 @@ impl Parser {
     }
 
     fn read_value<T: helpers::ValueReadCheck + ObjectBase>(&mut self, output: &mut T) {
-        if self.expect(&Token::is_special(SpecialToken::Equal)) || self.expect(&Token::is_special(SpecialToken::Colon)) {
+        if self.expect(&Token::is_special(SpecialToken::Equal)) || 
+            self.expect(&Token::is_special(SpecialToken::Colon)) {
             self.read_value_nocheck(output);
         }
     }
@@ -479,6 +480,28 @@ impl Parser {
         value
     }
 
+    fn guess_object(&mut self) -> ObjectType {
+        let mut next = ObjectType::new();
+        while !self.expect(&Token::is_special(SpecialToken::RBrace)) {
+            let (found, field_name) = self.read_name();
+            if !found {
+                if Token::is_special(SpecialToken::RBrace)(self.next().token()) {
+                    break;
+                } else {
+                    self.panic_expect("ident, string or }");
+                }
+            }
+            
+            if self.expect(&Token::is_special(SpecialToken::Equal)) || 
+                self.expect(&Token::is_special(SpecialToken::Colon)) {}
+
+            let opts = Options::new();
+            next.add_field(FieldType::new(field_name, self.guess_element(), opts));
+            self.expect(&Token::is_special(SpecialToken::Comma));
+        }
+        return next;
+    }
+
     fn guess_element(&mut self) -> Element {
         match &self.next().token() {
             Token::Integer(_) => { Element::Integer(self.parse_value_for(IntegerType::new())) },
@@ -486,7 +509,10 @@ impl Parser {
             Token::Boolean(_) => Element::Boolean(self.parse_value_for(BooleanType::new())),
             Token::String(_) => Element::String(self.parse_value_for(StringType::new())),
             Token::Special(v) => match v {
-                SpecialToken::LBrace => Element::None,   // object
+                SpecialToken::LBrace => {
+                    self.advance(); 
+                    Element::Object(self.guess_object())
+                },
                 SpecialToken::LBracket => Element::None, // array 
                 _ => Element::None,
             }

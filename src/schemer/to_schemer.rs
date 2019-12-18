@@ -198,23 +198,22 @@ fn field_values_to_string<T: ObjectBase + ToSchemerString>(val: &T, shift: usize
     }
 }
 
-fn options_to_string(opts: &Options) -> String {
+fn options_to_string(opts: &Options, shift: usize) -> String {
     if opts.empty() {
         String::new()
     } else {
         format!("({})", opts.all()
             .iter().map(|(k, v)|{
-                format!("{}: {}", k, cast(v).value_to(0))
+                format!("{}: {}", k, cast(v).value_to(shift + 1))
             }).collect::<Vec<String>>().join(", ")
         )
     }
 }
 
-
 fn field_to_string_impl(val: &FieldType, shift: usize) -> String {
     format!("{}{}{}: {}", utils::sh(shift), 
         &utils::quote(val.name()), 
-        &options_to_string(&val.options()),
+        &options_to_string(&val.options(), shift),
         match val.value() {
             Element::Boolean(v) => { field_values_to_string(v, shift, false) },
             Element::String(v) => { field_values_to_string(v, shift, false) },

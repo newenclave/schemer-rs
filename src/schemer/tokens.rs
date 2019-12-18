@@ -43,7 +43,7 @@ pub enum Token {
     Eof,
 }
 
-impl Token {
+impl Token { 
     #![allow(unused)]
     pub fn is_ident(&self) -> bool {
         match self {
