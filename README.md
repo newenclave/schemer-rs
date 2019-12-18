@@ -29,9 +29,9 @@ object_name(options): type[] = value
 ```
 
 Here:
-`object_name` - any valid ident value or string with double quotes.
-`(option)` - option list belongs to field
-`type` - one of `string`, `integer`, `floating`, `Boolean`, `object`. Probably aliases will be added soon. Any field can be an array. `[]`
+`object_name` - any valid ident value or string with double quotes.  
+`(option)` - option list belongs to field  
+`type` - one of `string`, `integer`, `floating`, `Boolean`, `object`. Probably aliases will be added soon. Any field can be an array. `[]`  
 
 ### Examples?
 
