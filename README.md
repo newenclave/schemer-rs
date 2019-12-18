@@ -10,7 +10,7 @@ it's written in Rust as an "helloworld" pet project. So with this project I want
 
 ### how does it work? 
 
-You give schemer file, it return json schema. But for now there is no json generator. So it just parses the own schema and generate the same schema. 
+You give schemer file, it return json schema. But for now there is no json generator. So it just parses the own schema and generates the same schema. 
 
 ### depends?
 
