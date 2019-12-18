@@ -65,7 +65,8 @@ main: object {
         i: integer = 42
     }
     obj2: object[] {
-        s: string = ""
+        s: string = "",
+        b: boolean = true
     } = [ {"s": "1"}, {"s": "2"}, {s: "3"} ]
 } 
 ```
