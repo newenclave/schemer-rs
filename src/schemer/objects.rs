@@ -37,6 +37,21 @@ impl StringType {
     pub fn add_value(&mut self, value: &str) {
         self.value.add_value(String::from(value));
     }
+    
+    pub fn enum_values(&self) -> &Option<Enum<String>> {
+        &self.enum_values
+    }
+    
+    pub fn add_enum_value(&mut self, val: &str) -> bool {
+        match &mut self.enum_values {
+            Some(values) => values.try_add(val.to_string()),
+            None => { 
+                self.add_value(val);
+                self.enum_values = Some(Enum::create_with(val.to_string()));
+                true
+            },
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -88,6 +103,22 @@ impl <T> NumberType<T> where T: Numeric {
     pub fn set_max(&mut self, val: T) {
         self.min_max.set_max(val);
     }
+
+    pub fn enum_values(&self) -> &Option<Enum<T>> {
+        &self.enum_values
+    }
+
+    pub fn add_enum_value(&mut self, val: T) -> bool {
+        match &mut self.enum_values {
+            Some(values) => values.try_add(val),
+            None => { 
+                self.add_value(val.clone());
+                self.enum_values = Some(Enum::create_with(val));
+                true
+            },
+        }
+    }
+
 }
 
 pub type IntegerType = NumberType<i64>;

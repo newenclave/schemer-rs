@@ -54,8 +54,21 @@ impl ToSchemerString for BooleanType {
 
 impl ToSchemerString for StringType {
     fn field_to(&self, _: usize) -> String {
-        format!("string{}", 
-            if self.is_array() { "[]" } else { "" }
+        let opt_enum = self.enum_values();
+        let enum_string = match &opt_enum {
+            Some(values) => {
+                format!(" enum {{\"{}\"}}",
+                    values.values()
+                        .iter().map(|x| {
+                            x.to_string()
+                        }).collect::<Vec<String>>().join("\", \"")
+                )
+            },
+            None => String::new(),
+        };        
+        format!("string{}{}", 
+            if self.is_array() { "[]" } else { "" },
+            enum_string
         )
     }
     fn value_to(&self, _: usize) -> String {
@@ -76,10 +89,33 @@ impl ToSchemerString for StringType {
 
 impl<T> ToSchemerString for NumberType<T> where T: Numeric, T: Clone {
     fn field_to(&self, _: usize) -> String {
-        format!("{}{}", T::name(), 
-            if self.is_array() { "[]" } else { "" }
+        let ival = self.interval();
+        let interval = if ival.has_minmax() { 
+            format!(" {}..{}", 
+                if ival.has_min() { ival.min(T::zero()).to_string() } else { "".to_string() }, 
+                if ival.has_min() { ival.max(T::zero()).to_string() } else { "".to_string() } )
+        } else {
+            String::new()
+        };
+        let opt_enum = self.enum_values();
+        let enum_string = match &opt_enum {
+            Some(values) => {
+                format!(" enum {{{}}}",
+                    values.values()
+                        .iter().map(|x| {
+                            x.to_string()
+                        }).collect::<Vec<String>>().join(", ")
+                )
+            },
+            None => String::new(),
+        };
+        format!("{}{}{}{}", T::name(), 
+            if self.is_array() { "[]" } else { "" }, 
+            interval, 
+            enum_string
         )
     }
+
     fn value_to(&self, _: usize) -> String {
         match self.value() {
             PossibleArray::Array(arr) => {

@@ -1,0 +1,4 @@
+main: object {  # this comment will be ignored by lexer
+    i: integer  # some integer value
+    s: string   # some string value
+}

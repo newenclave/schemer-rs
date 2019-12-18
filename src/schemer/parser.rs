@@ -1,4 +1,3 @@
-#![allow(unused)]
 
 use super::tokens::{TokenInfo, Token, SpecialToken, TypeName};
 use super::objects::*;
@@ -59,6 +58,38 @@ mod helpers {
             match parser.current().token() {
                 Token::Floating(val) => self.set_max(*val),
                 _ => (),
+            }
+        }
+    }
+
+    pub trait WithEnum {
+        fn enum_add_value(&mut self, parser: &mut Parser) -> bool;
+    }
+    
+    impl WithEnum for IntegerType {
+        fn enum_add_value(&mut self, parser: &mut Parser) -> bool {
+            match &parser.current().token() {
+                Token::Integer(val) => self.add_enum_value(*val),
+                _ => true,
+            }
+        }
+    }
+
+    impl WithEnum for FloatingType {
+        fn enum_add_value(&mut self, parser: &mut Parser) -> bool {
+            match &parser.current().token() {
+                Token::Integer(val) => self.add_enum_value(*val as f64),
+                Token::Floating(val) => self.add_enum_value(*val),
+                _ => true,
+            }
+        }
+    }
+
+    impl WithEnum for StringType {
+        fn enum_add_value(&mut self, parser: &mut Parser) -> bool {
+            match &parser.current().token() {
+                Token::String(val) => self.add_enum_value(val),
+                _ => true,
             }
         }
     }
@@ -306,6 +337,7 @@ impl Parser {
         let name = match &self.next().token() {
             Token::Ident(value) => { Some(String::from(value)) },
             Token::String(value) => { Some(String::from(value)) },
+            Token::Boolean(value) => { Some(value.to_string()) },
             _ => None,
         };
         match name {
@@ -314,13 +346,7 @@ impl Parser {
         }
     }
 
-    pub fn parse_string(&mut self) -> StringType {
-        let mut result = self.parse_begin(StringType::new());
-        self.read_value(&mut result);
-        result
-    }
-
-    fn read_interval<T: helpers::ValueReadCheck + helpers::WithInterval>(&mut self, result: &mut T) -> bool {
+    fn try_read_interval<T: helpers::ValueReadCheck + helpers::WithInterval>(&mut self, result: &mut T) -> bool {
         if self.expect(&T::token_checker) {
             result.set_min(self);
             if !self.expect(&Token::is_special(SpecialToken::Interval)) {
@@ -338,6 +364,28 @@ impl Parser {
             true
         } else {
             false
+        }
+    }
+
+    fn try_read_enum<T: helpers::ValueReadCheck 
+                + helpers::WithEnum 
+                + ObjectBase>(&mut self, output: &mut T) -> bool {
+        if self.expect(&Token::is_special(SpecialToken::Enum)) {
+            if self.expect(&Token::is_special(SpecialToken::LBrace)) {
+                while self.expect(&T::token_checker) {
+                    output.enum_add_value(self);
+                    self.expect(&Token::is_special(SpecialToken::Comma));
+                }
+                if !self.expect(&Token::is_special(SpecialToken::RBrace)) {
+                    self.panic_expect(&(String::from("} or ") + T::expected()));
+                }
+                return true;
+            } else {
+                self.panic_expect(&(String::from("{")));
+                return false;
+            }
+        } else {
+            return false;
         }
     }
 
@@ -373,9 +421,13 @@ impl Parser {
 
     fn parse_number<T: helpers::ValueReadCheck 
             + ObjectBase 
+            + helpers::WithEnum
             + helpers::WithInterval>(&mut self, mut result: T) -> T {
         result = self.parse_begin(result);
-        self.read_interval(&mut result);
+
+        while self.try_read_interval(&mut result) ||
+              self.try_read_enum(&mut result) {}
+
         self.read_value(&mut result);
         return result;
     }
@@ -392,6 +444,13 @@ impl Parser {
         let mut result = self.parse_begin(BooleanType::new());
         self.read_value(&mut result);
         return result;
+    }
+
+    pub fn parse_string(&mut self) -> StringType {
+        let mut result = self.parse_begin(StringType::new());
+        self.try_read_enum(&mut result);
+        self.read_value(&mut result);
+        result
     }
 
     pub fn parse_object(&mut self) -> ObjectType {

@@ -39,8 +39,9 @@ fn main() {
     } else {
         let v = "
         main: object[] {
-            i: integer
-        } = [{i: 1}, {i: 2}, {i: 3}]
+            i: integer 1..3 enum { 1, 2, 3 } = 1
+            s: string enum {\"empty\"}
+        }
         ".to_owned();
         parse_format(&v);
         println!("Use: schemer-rs <path_to_scheme_file>")

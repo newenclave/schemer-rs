@@ -1,4 +1,3 @@
-#![allow(unused)]
 
 use std::fmt;
 use super::trie::Trie as Trie;
@@ -130,7 +129,7 @@ mod helpers {
                         'r' => result.push('\r'),
                         't' => result.push('\t'),
                         '\\' => result.push('\\'),
-                        '\0' => result.push('\\'),
+                        '\0' => result.push('\0'),
                         val => if val == ec {
                                 result.push(ec);
                             } else {
@@ -181,6 +180,9 @@ impl Lexer {
         lex.add_special("..", SpecialToken::Interval);
         lex.add_special(":", SpecialToken::Colon);
         lex.add_special(";", SpecialToken::Semicolon);
+        lex.add_special("#", SpecialToken::Hash);
+
+        lex.add_special("enum", SpecialToken::Enum);
 
         lex.add_type("string", TypeName::TypeString);
         lex.add_type("integer", TypeName::TypeInteger);
@@ -207,10 +209,6 @@ impl Lexer {
         self.add(key, Token::Special(value));
     }
     
-    fn literal(&self, from: &Scanner, to: &Scanner) {
-
-    }
-
     pub fn run(&self, data: &str) -> Result<Vec<TokenInfo>, String> {
         let mut result = Vec::new();
         result.push(TokenInfo::new(Token::None, (0, 0)));
@@ -230,7 +228,11 @@ impl Lexer {
                         ival.push_str(&scan_ident(&mut scanner));
                         result.push(TokenInfo::new(Token::Ident(ival), pos));
                     } else {
-                        result.push(TokenInfo::new(expr.0.value.clone(), pos));
+                        if Token::is_special(SpecialToken::Hash)(&expr.0.value) {
+                            scanner.advance_while(|c| { c != '\n' });
+                        } else {
+                            result.push(TokenInfo::new(expr.0.value.clone(), pos));
+                        }
                     }
                 },
                 None => {

@@ -67,6 +67,11 @@ impl<T> Enum<T> where T: std::cmp::PartialEq + Clone {
             values: Vec::new(),
         }
     }
+    pub fn create_with(val: T) -> Enum<T> {
+        Enum {
+            values: vec!(val),
+        }
+    }
     pub fn check(&self, val: &T) -> bool {
         !self.values.iter().find(|&x| *val == *x).is_none()
     }
@@ -77,6 +82,9 @@ impl<T> Enum<T> where T: std::cmp::PartialEq + Clone {
             self.values.push(val);
             true
         }
+    }
+    pub fn values(&self) -> &Vec<T> {
+        &self.values
     }
 }
 
