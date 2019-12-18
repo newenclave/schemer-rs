@@ -1,9 +1,6 @@
-#![allow(unused)]
 
 use std::collections::HashMap;
-use std::ops::{Add, Sub};
 use super::helpers::*;
-use super::object_base::*;
 
 #[derive(Clone)]
 pub struct StringType {
@@ -232,12 +229,6 @@ impl Options {
     pub fn add(&mut self, key: &str, value: Element) {
         self.values.insert(key.to_string(), value);
     }
-    pub fn has(&self, key: &str) -> bool {
-        !self.get(key).is_none()
-    }
-    pub fn get(&self, key: &str) -> Option<&Element> {
-        self.values.get(key)
-    }
     pub fn all(&self) -> &HashMap<String, Element> {
         &self.values
     }
@@ -266,8 +257,5 @@ impl FieldType {
     }
     pub fn options(&self) -> &Options {
         &self.opts
-    }
-    pub fn empty_options(&self) -> bool {
-        self.opts.empty()
     }
 }

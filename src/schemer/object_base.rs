@@ -1,4 +1,3 @@
-#![allow(unused)]
 
 use super::objects::*;
 use super::helpers::*;

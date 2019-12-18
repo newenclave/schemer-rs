@@ -1,5 +1,4 @@
 
-use std::fmt;
 use super::trie::Trie as Trie;
 use super::scanner::Scanner as Scanner;
 use super::tokens::{TokenInfo, Token, SpecialToken, TypeName};

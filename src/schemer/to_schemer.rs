@@ -1,4 +1,3 @@
-#![allow(unused)]
 
 use super::objects::*;
 use super::object_base::*;
@@ -159,7 +158,7 @@ impl ToSchemerString for ObjectType {
                         unboxed.fields()
                     },
                     None => self.fields(),
-                }.iter().map(|(k, v)| {
+                }.iter().map(|(_, v)| {
                     values_to_string(v, shift + 1)
                 }).collect::<Vec<String>>().join(",\n");
                 format!("{{\n{}\n{}}}", &str_value, utils::sh(shift))    

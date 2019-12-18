@@ -1,4 +1,3 @@
-#![allow(unused)]
 
 mod utils {
     pub fn get_top(value: &str) -> char {
@@ -35,7 +34,7 @@ impl<'a> Scanner<'a> {
     }
 
     pub fn jump(&mut self, count: usize) {
-        for i in 0..count {
+        for _i in 0..count {
             self.advance();
         }
     }

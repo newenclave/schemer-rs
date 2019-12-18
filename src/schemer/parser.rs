@@ -3,6 +3,7 @@ use super::tokens::{TokenInfo, Token, SpecialToken, TypeName};
 use super::objects::*;
 use super::object_base::*;
 
+/*
 pub struct ParserState {
     current: usize,
     next: usize,
@@ -16,6 +17,7 @@ impl ParserState {
         }
     }
 }
+*/
 
 pub struct Parser {
     tokens: Vec<TokenInfo>,
@@ -269,6 +271,7 @@ impl Parser {
         }
     }
 
+    /*
     pub fn backup(&self) -> ParserState {
         ParserState::new(self.current, self.next)
     }
@@ -277,6 +280,7 @@ impl Parser {
         self.current = bkup.current;
         self.next = bkup.next;
     }
+    */
 
     pub fn advance(&mut self) -> bool {
         self.current = self.next;
@@ -462,8 +466,8 @@ impl Parser {
                     panic!("Field '{}' is already defined in onject.", element.name());
                 }
                 result.add_field(element);
-                self.expect(&Token::is_special(SpecialToken::Semicolon)) ||
-                self.expect(&Token::is_special(SpecialToken::Comma));
+                if self.expect(&Token::is_special(SpecialToken::Semicolon)) ||
+                    self.expect(&Token::is_special(SpecialToken::Comma)) {}
             } 
             self.read_value(&mut result);
         }
@@ -495,7 +499,7 @@ impl Parser {
         if self.expect(&Token::is_special(SpecialToken::LParen)) {
             while !self.expect(&Token::is_special(SpecialToken::RParen)) {
                 let (found, name) = self.read_name();
-                if(!found) {
+                if !found {
                     self.panic_expect("ident or string");
                 }
 

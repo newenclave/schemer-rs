@@ -1,12 +1,10 @@
-#![allow(unused)]
+//#![allow(unused)]
 
 use std::env;
 use std::fs;
 mod schemer;
 use schemer::lexer::{Lexer};
 use schemer::parser::Parser;
-use schemer::tokens::{Token, SpecialToken};
-use schemer::objects::{Element};
 use schemer::to_schemer::{field_to_string};
 
 fn parse_format(obj: &str) {

@@ -1,4 +1,3 @@
-#![allow(unused)]
 
 use std::collections::HashMap;
 use super::scanner::Scanner as StrScanner;

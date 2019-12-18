@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 
 #[derive(Clone)]
 pub struct Interval<T: Clone> {
@@ -7,11 +5,6 @@ pub struct Interval<T: Clone> {
 }
 
 impl<T> Interval<T> where T: std::cmp::PartialOrd + Copy {
-    pub fn new(min: Option<T>, max: Option<T>) -> Interval<T> {
-        Interval {
-            min_max: (min, max)
-        }
-    }
     pub fn none() -> Interval<T> {
         Interval {
             min_max: (None, None)
@@ -62,11 +55,6 @@ pub struct Enum<T: Clone> {
 }
 
 impl<T> Enum<T> where T: std::cmp::PartialEq + Clone {
-    pub fn new() -> Enum<T> {
-        Enum {
-            values: Vec::new(),
-        }
-    }
     pub fn create_with(val: T) -> Enum<T> {
         Enum {
             values: vec!(val),

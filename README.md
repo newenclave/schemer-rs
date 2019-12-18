@@ -97,7 +97,7 @@ Also i'm gonna add eamples. See `test_data` directory.
 #### Some tasks to do
 
 - [ ] remove all the panics. Parser should work with Result, not with panics
-- [ ] add `enum` for strings, numbers
+- [x] add `enum` for strings, numbers
 - [ ] add `pattern` for strings
-- [ ] remove `unused` and clean the code out of unused
+- [x] remove `unused` and clean the code out of unused
 - [ ] adding json generators

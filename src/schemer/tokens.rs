@@ -1,4 +1,3 @@
-#![allow(unused)]
 
 #[derive(Clone, PartialEq)]
 pub enum SpecialToken {
@@ -45,6 +44,7 @@ pub enum Token {
 }
 
 impl Token {
+    #![allow(unused)]
     pub fn is_ident(&self) -> bool {
         match self {
             Token::Ident(_) => true,
@@ -99,7 +99,7 @@ impl Token {
     }
     pub fn is_type(&self) -> bool {
         match self {
-            Token::Type(t) => true,
+            Token::Type(_) => true,
             _ => false
         }
     }
