@@ -180,11 +180,11 @@ impl ToSchemerString for AnyType {
                 let values = (**arr)
                 .iter().map(|x| {
                     match &**x {
-                        Some(field) => cast(field).value_to(shift + 1),
+                        Some(field) => cast(field).value_to(shift),
                         None => "null".to_string(),
                     }
                 }).collect::<Vec<String>>().join(", ");
-                format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
+                format!("[\n{}{}\n{}]", utils::sh(shift), values, utils::sh(shift))
             },
             PossibleArray::Value(val) => {
                 match &**val {
