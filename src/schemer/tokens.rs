@@ -16,6 +16,7 @@ pub enum SpecialToken {
     Semicolon, // ;
 
     Enum, // enum
+    Null, // null
     Hash, // #
 
     Interval, // ..
@@ -158,6 +159,7 @@ impl TokenInfo {
                 SpecialToken::Interval => "..".to_string(),
                 SpecialToken::Hash => "#".to_string(),
                 SpecialToken::Enum => "enum".to_string(),
+                SpecialToken::Null => "null".to_string(),
             },
             Token::Eof => "eof".to_string(),
         }

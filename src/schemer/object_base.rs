@@ -83,3 +83,21 @@ impl<T> ObjectBase for NumberType<T> where T: Numeric, T: Clone {
         self.set_value(PossibleArray::Array(Vec::new()));
     }
 }
+
+impl ObjectBase for AnyType {
+    fn create() -> Self {
+        AnyType::new()
+    }
+    fn is_array(&self) -> bool {
+        self.value().is_array()
+    }
+    fn is_default(&self) -> bool {
+        match self.value() {
+            PossibleArray::Value(v) => !v.is_none(),
+            PossibleArray::Array(v) => v.len() == 0,
+        }
+    }
+    fn make_array(&mut self) {
+        self.set_value(PossibleArray::Array(Vec::new()));
+    }
+}

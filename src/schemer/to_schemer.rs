@@ -167,6 +167,37 @@ impl ToSchemerString for ObjectType {
     }
 }
 
+impl ToSchemerString for AnyType {
+    fn field_to(&self, _: usize) -> String {
+        format!("any{}", 
+            if self.is_array() { "[]" } else { "" },
+        )
+    }
+
+    fn value_to(&self, shift: usize) -> String {
+        match self.value() {
+            PossibleArray::Array(arr) => {
+                let values = (**arr)
+                .iter().map(|x| {
+                    match &**x {
+                        Some(field) => cast(field).value_to(shift + 1),
+                        None => "null".to_string(),
+                    }
+                }).collect::<Vec<String>>().join(", ");
+                format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
+            },
+            PossibleArray::Value(val) => {
+                match &**val {
+                    Some(unboxed) => {
+                        cast(unboxed).value_to(shift + 1)
+                    },
+                    None => "null".to_string(),
+                }
+            },
+        }
+    }
+}
+
 impl ToSchemerString for Element {
     fn field_to(&self, shift: usize) -> String {
         match &self {
@@ -175,7 +206,8 @@ impl ToSchemerString for Element {
             Element::Integer(v) => { cast(v).field_to(shift) },
             Element::Floating(v) => { cast(v).field_to(shift) },
             Element::Object(v) => { cast(v).field_to(shift) },
-            _ => "".to_string(),
+            Element::Any(v) => { cast(v).field_to(shift) },
+            Element::None => "".to_string(),
         }
     }
     fn value_to(&self, shift: usize) -> String {
@@ -185,7 +217,8 @@ impl ToSchemerString for Element {
             Element::Integer(v) => { cast(v).value_to(shift) },
             Element::Floating(v) => { cast(v).value_to(shift) },
             Element::Object(v) => { cast(v).value_to(shift) },
-            _ => "".to_string(),
+            Element::Any(v) => { cast(v).value_to(shift) },
+            Element::None => "".to_string(),
         }
     }
 }
@@ -220,7 +253,8 @@ fn field_to_string_impl(val: &FieldType, shift: usize) -> String {
             Element::Integer(v) => { field_values_to_string(v, shift, false) },
             Element::Floating(v) => { field_values_to_string(v, shift, false) },
             Element::Object(v) => { field_values_to_string(v, shift, false) },
-            _ => "".to_string(),
+            Element::Any(v) => { field_values_to_string(v, shift, false) },
+            Element::None => "".to_string(),
         }
     )
 }

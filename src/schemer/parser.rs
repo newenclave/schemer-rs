@@ -247,6 +247,11 @@ mod helpers {
                                 parser.read_value(&mut val);
                                 next.add_field(FieldType::new(field_name, Element::Object(val), opts));
                             },
+                            Element::Any(_) => { 
+                                // let mut val = create_same_object(v);
+                                // parser.read_value(&mut val);
+                                // next.add_field(FieldType::new(field_name, Element::Any(val), opts));
+                            },
                         }
                     },
                     None => {
@@ -480,6 +485,15 @@ impl Parser {
         value
     }
 
+    fn read_any_array(&mut self) -> Element {
+        let mut new_any = AnyType::new_array();
+        while !self.expect(&Token::is_special(SpecialToken::RBracket)) {
+            new_any.add_value(self.guess_element());
+            if self.expect(&Token::is_special(SpecialToken::Comma)) {}
+        }
+        return Element::Any(new_any);
+    }
+ 
     fn guess_object(&mut self) -> ObjectType {
         let mut next = ObjectType::new();
         while !self.expect(&Token::is_special(SpecialToken::RBrace)) {
@@ -491,7 +505,7 @@ impl Parser {
                     self.panic_expect("ident, string or }");
                 }
             }
-            
+
             if self.expect(&Token::is_special(SpecialToken::Equal)) || 
                 self.expect(&Token::is_special(SpecialToken::Colon)) {}
 
@@ -513,7 +527,14 @@ impl Parser {
                     self.advance(); 
                     Element::Object(self.guess_object())
                 },
-                SpecialToken::LBracket => Element::None, // array 
+                SpecialToken::LBracket => { // any array 
+                    self.advance();
+                    self.read_any_array()
+                }, 
+                SpecialToken::Null => { // null
+                    self.advance();
+                    Element::Any(AnyType::new())
+                } 
                 _ => Element::None,
             }
             _ => Element::None,

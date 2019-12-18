@@ -182,6 +182,7 @@ impl Lexer {
         lex.add_special("#", SpecialToken::Hash);
 
         lex.add_special("enum", SpecialToken::Enum);
+        lex.add_special("null", SpecialToken::Null);
 
         lex.add_type("string", TypeName::TypeString);
         lex.add_type("integer", TypeName::TypeInteger);

@@ -36,7 +36,7 @@ fn main() {
         }
     } else {
         let v = "
-        main: object[] {
+        main(aaa: [1, 4.5, \"help\", [1, 2, 3]]): object[] {
             i: integer 1..3 enum { 1, 2, 3 } = 1
             s: string enum {\"empty\"}
         }

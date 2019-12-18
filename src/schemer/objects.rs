@@ -153,7 +153,6 @@ impl BooleanType {
 #[derive(Clone)]
 pub struct ObjectType {
     value: PossibleArray<Box<Option<ObjectType>>>,
-    name: String,
     opts: Options,
     fields: HashMap<String, FieldType>,
 }
@@ -162,7 +161,6 @@ impl ObjectType {
     pub fn new() -> ObjectType {
         ObjectType {
             value: PossibleArray::Value(Box::new(None)),
-            name: String::new(),
             opts: Options::new(),
             fields: HashMap::new(),
         }
@@ -204,6 +202,36 @@ impl ObjectType {
 }
 
 #[derive(Clone)]
+pub struct AnyType {
+    value: PossibleArray<Box<Option<Element>>>,
+    opts: Options,
+}
+
+impl AnyType {
+    pub fn new() -> AnyType {
+        AnyType {
+            value: PossibleArray::Value(Box::new(None)),
+            opts: Options::new(),
+        }
+    }
+    pub fn new_array() -> AnyType {
+        AnyType {
+            value: PossibleArray::new_array(),
+            opts: Options::new(),
+        }
+    }
+    pub fn add_value(&mut self, value: Element) {
+        self.value.add_value(Box::new(Some(value)))
+    }
+    pub fn value(&self) -> &PossibleArray<Box<Option<Element>>> {
+        &self.value
+    }
+    pub fn set_value(&mut self, val: PossibleArray<Box<Option<Element>>>) {
+        self.value = val;
+    }
+}
+
+#[derive(Clone)]
 pub enum Element {
     None,
     String(StringType),
@@ -211,6 +239,7 @@ pub enum Element {
     Floating(FloatingType),
     Boolean(BooleanType),
     Object(ObjectType),
+    Any(AnyType),
 }
 
 #[derive(Clone)]
