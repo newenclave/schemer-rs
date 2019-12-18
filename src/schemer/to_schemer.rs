@@ -8,27 +8,10 @@ static SHIFT: &'static str = "  ";
 
 mod utils {
     pub fn string_join<T: std::string::ToString>(vals: &Vec<T>, sep: &str) -> String {
-        let mut first = true;
-        let mut res = String::new();
-
-        for v in vals.iter() {
-            if first {
-                first = false;
-            } else {
-                res.push_str(sep);
-            }
-            res.push_str(&v.to_string());
-        }
-        return res;
+        vals.iter().map(|v|{
+            v.to_string()
+        }).collect::<Vec<String>>().join(sep)
     }
-}
-
-pub trait ToSchemer {
-    fn to_schemer_string(&self) -> String;
-}
-
-pub fn to_schemer_string<T: ToSchemer>(obj: &T) -> String {
-    obj.to_schemer_string()
 }
 
 trait ToSchemerString {
@@ -103,12 +86,12 @@ impl ToSchemerString for ObjectType {
         let fields: Vec<String> = self.fields()
             .iter()
             .map(|(_, v)| {
-                field_to_string(v, shift + 1)
+                field_to_string_impl(v, shift + 1)
             }).collect();
         format!("object{} {{\n{}\n{}}}", 
             if self.is_array() { "[]" } else { "" },
             fields.join(",\n"),
-            SHIFT.repeat(0)
+            SHIFT.repeat(shift)
         )
     }
     fn value_to(&self, shift: usize) -> String {
@@ -122,7 +105,7 @@ impl ToSchemerString for ObjectType {
                         None => String::new(),
                     }
                 }).collect();
-                format!("[\n{}\n{}]", values.join(",\n"), SHIFT.repeat(shift))
+                format!("[\n{}\n{}]", values.join(", "), SHIFT.repeat(shift))
             },
             PossibleArray::Value(val) => {
                 let field_info: Vec<String> = self.fields()
@@ -131,7 +114,7 @@ impl ToSchemerString for ObjectType {
                         values_to_string(v, shift + 1)
                     }
                 ).collect();
-                format!("{}{{\n{}\n{}}}", SHIFT.repeat(shift), &field_info.join(",\n"), SHIFT.repeat(shift))
+                format!("{{\n{}\n{}}}", &field_info.join(",\n"), SHIFT.repeat(shift))
             },
         }
     }
@@ -145,15 +128,15 @@ fn field_values_to_string<T: ObjectBase + ToSchemerString>(val: &T, shift: usize
     }
 }
 
-fn field_to_string(val: &FieldType, shift: usize) -> String {
+fn field_to_string_impl(val: &FieldType, shift: usize) -> String {
     format!("{}{}: {}", SHIFT.repeat(shift), 
         val.name(), 
         match val.value() {
-            Element::Boolean(v) => { field_values_to_string(v, 0, false) },
-            Element::String(v) => { field_values_to_string(v, 0, false) },
-            Element::Integer(v) => { field_values_to_string(v, 0, false) },
-            Element::Floating(v) => { field_values_to_string(v, 0, false) },
-            Element::Object(v) => { field_values_to_string(v, 0, false) },
+            Element::Boolean(v) => { field_values_to_string(v, shift, false) },
+            Element::String(v) => { field_values_to_string(v, shift, false) },
+            Element::Integer(v) => { field_values_to_string(v, shift, false) },
+            Element::Floating(v) => { field_values_to_string(v, shift, false) },
+            Element::Object(v) => { field_values_to_string(v, shift, false) },
             _ => "".to_string(),
         }
     )
@@ -173,12 +156,6 @@ fn values_to_string(val: &FieldType, shift: usize) -> String {
     )
 }
 
-impl ToSchemer for FieldType {
-    fn to_schemer_string(&self) -> String {
-        field_to_string(self, 0)
-    }
-}
-
-pub fn fild_to_schemer_string(val: &FieldType) -> String {
-    field_to_string(val, 0)
+pub fn field_to_string(val: &FieldType) -> String {
+    field_to_string_impl(val, 0)
 }

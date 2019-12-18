@@ -5,55 +5,109 @@ use schemer::lexer::{Lexer};
 use schemer::parser::Parser;
 use schemer::tokens::{Token, SpecialToken};
 use schemer::objects::{Element};
-use schemer::to_schemer::*;
+use schemer::to_schemer::{field_to_string};
 
 
 fn main() {
 
-    let val = "
+    let _val = "
     main: object[] {
-        flag: boolean,
-        data: string = \"hello!\",
-        f: floating = 0.5,
-        i: integer[] = [1, 2, 3, 4]
-      } = [
-        {
-          flag: false,
-          data: \"hello!\",
-          f: 0.5,
-          i: [1, 2, 3, 4]
-        },
-        {
-          flag: false,
-          data: \"hello!\",
-          f: 0.5,
-          i: [1, 2, 3, 4]
-        },
-        {
-          flag: false,
-          data: \"hello!\",
-          f: 0.5,
-          i: [1, 2, 3, 4]
-        }
-      ]
+        o: object { 
+            i: integer,
+            f: floating
+        } 
+    } 
     ".to_owned();
 
-    let _val = "
-    object[] {
+    let val = "main: object[] {
         int: object {
-         int: object {
           int: object {
-           int: object {
             int: object {
-             itnt: boolean
+              int: object {
+                int: object {
+                  itnt: boolean
+                } = {
+                  itnt: false
+                }
+              } = {
+                int: {
+                  itnt: false
+                }
+              }
+            } = {
+              int: {
+                int: {
+                  itnt: false
+                }
+              }
             }
-           }
+          } = {
+            int: {
+              int: {
+                int: {
+                  itnt: false
+                }
+              }
+            }
           }
-         }
+        } = {
+          int: {
+            int: {
+              int: {
+                int: {
+                  itnt: false
+                }
+              }
+            }
+          }
+        },
+        name: string = \"123\",
+        value: integer
+      } = [
+      {
+          int: {
+            int: {
+              int: {
+                int: {
+                  int: {
+                    itnt: false
+                  }
+                }
+              }
+            }
+          },
+          name: \"test name\",
+          value: 50
+        }, {
+          int: {
+            int: {
+              int: {
+                int: {
+                  int: {
+                    itnt: false
+                  }
+                }
+              }
+            }
+          },
+          name: \"123\",
+          value: 0
+        }, {
+          int: {
+            int: {
+              int: {
+                int: {
+                  int: {
+                    itnt: false
+                  }
+                }
+              }
+            }
+          },
+          name: \"123\",
+          value: 0
         }
-        name: string = \"123\"
-        value: integer 1..100
-       } = [{int = {int = {int = {int = {int = {itnt = false}}}}}, name = \"test name\", value = 50}, {int = {int = {int = {int = {int = {itnt = false}}}}}, name = \"123\", value = 0}, {int = {int = {int = {int = {int = {itnt = false}}}}}, name = \"123\", value = 0}]
+      ]
     ".to_owned();
     let lex = Lexer::new();
     let vec = lex.run(&val);
@@ -69,5 +123,5 @@ fn main() {
     
     let sss = pars.parse_field();
 
-    println!("{}", fild_to_schemer_string(&sss));
+    println!("{}", field_to_string(&sss));
 }

@@ -5,33 +5,12 @@ use std::ops::{Add, Sub};
 use super::helpers::*;
 use super::object_base::*;
 
-mod utils {
-    pub fn string_join<T: std::string::ToString>(vals: &Vec<T>, sep: &str) -> String {
-        let mut first = true;
-        let mut res = String::new();
-
-        for v in vals.iter() {
-            if first {
-                first = false;
-            } else {
-                res.push_str(sep);
-            }
-            res.push_str(&v.to_string());
-        }
-        return res;
-    }
-}
-
 #[derive(Clone)]
 pub struct Options {}
 impl Options {
     pub fn new() -> Options {
         Options{}
     }
-}
-
-fn object_value_to_string<T: ObjectBase>(obj: &T) -> String {
-    obj.value_to_string()
 }
 
 #[derive(Clone)]
@@ -65,24 +44,6 @@ impl StringType {
 
     pub fn add_value(&mut self, value: &str) {
         self.value.add_value(String::from(value));
-    }
-
-    pub fn to_string(&self, start: usize) -> String {
-        let mut res = String::from("string");
-        let empty = match &self.value {
-            PossibleArray::Array(arr) => {
-                res.push_str("[]");
-                arr.len() == 0
-            },
-            PossibleArray::Value(val) => {
-                val.len() == 0
-            },
-        };
-        if !empty {
-            res.push_str(" = ");
-            res.push_str(&object_value_to_string(self));
-        }
-        return res;
     }
 }
 
@@ -135,34 +96,6 @@ impl <T> NumberType<T> where T: Numeric {
     pub fn set_max(&mut self, val: T) {
         self.min_max.set_max(val);
     }
-
-    pub fn to_string(&self, start: usize) -> String {
-        let mut res = String::from(T::name());
-        let empty = match &self.value {
-            PossibleArray::Array(arr) => {
-                res.push_str("[]");
-                arr.len() == 0
-            },
-            PossibleArray::Value(val) => {
-                *val == T::zero()
-            },
-        };
-        if self.min_max.has_minmax() {
-            res.push_str(" ");
-            if self.min_max.has_min() {
-                res.push_str(&self.min_max.min(T::zero()).to_string());
-            }
-            res.push_str("..");
-            if self.min_max.has_max() {
-                res.push_str(&self.min_max.max(T::zero()).to_string());
-            }
-        }
-        if !empty {
-            res.push_str(" = ");
-            res.push_str(&object_value_to_string(self));
-        }
-        return res;
-    }
 }
 
 pub type IntegerType = NumberType<i64>;
@@ -189,24 +122,6 @@ impl BooleanType {
 
     pub fn set_value(&mut self, val: PossibleArray<bool>) {
         self.value = val;
-    }
-
-    pub fn to_string(&self, start: usize) -> String {
-        let mut res = String::from("boolean");
-        let empty = match &self.value {
-            PossibleArray::Array(arr) => {
-                res.push_str("[]");
-                arr.len() == 0
-            },
-            PossibleArray::Value(val) => {
-                !val
-            },
-        };
-        if !empty {
-            res.push_str(" = ");
-            res.push_str(&object_value_to_string(self));
-        }
-        return res;
     }
 }
 
@@ -261,38 +176,7 @@ impl ObjectType {
     pub fn clone_fields(&self) -> HashMap<String, FieldType> {
         self.fields.clone()
     }
-
-    pub fn to_string(&self, start: usize) -> String {
-        let mut res = String::from("object");
-        let empty = match &self.value {
-            PossibleArray::Array(arr) => {
-                res.push_str("[]");
-                arr.len() == 0
-            },
-            PossibleArray::Value(val) => {
-                match &*(*val) {
-                    None => true,
-                    _ => false,
-                }
-            },
-        };
-        res.push_str(" {\n");
-        for (k, v) in self.fields.iter() {
-            res.push_str(&" ".repeat(start + 1));
-            res.push_str(&(k.to_owned() + ": "));
-            res.push_str(&v.to_string(start + 1));
-            res.push_str("\n");
-        } 
-        res.push_str(&" ".repeat(start));
-        res.push_str("}");
-        if !empty {
-            res.push_str(" = ");
-            res.push_str(&object_value_to_string(self));
-        }
-        return res
-    }
 }
-
 
 #[derive(Clone)]
 pub enum Element {
@@ -302,22 +186,6 @@ pub enum Element {
     Floating(FloatingType),
     Boolean(BooleanType),
     Object(ObjectType),
-}
-
-impl Element {
-    pub fn clone(&self) -> Element {
-        Element::None
-    }
-    pub fn value_to_string(&self) -> String {
-        match &self {
-            Element::None => "".to_string(),
-            Element::String(v) => { object_value_to_string(v) },
-            Element::Integer(v) => { object_value_to_string(v) },
-            Element::Floating(v) => { object_value_to_string(v) },
-            Element::Boolean(v) => { object_value_to_string(v) },
-            Element::Object(v) => { object_value_to_string(v) },
-        } 
-    }
 }
 
 #[derive(Clone)]
@@ -338,16 +206,5 @@ impl FieldType {
     }
     pub fn name<'a>(&'a self) -> &'a str {
         return &self.name
-    }
-
-    pub fn to_string(&self, start: usize) -> String {
-        match self.value() {
-            Element::None => "".to_string(),
-            Element::String(v) => { v.to_string(start) },
-            Element::Integer(v) => { v.to_string(start) },
-            Element::Floating(v) => { v.to_string(start) },
-            Element::Boolean(v) => { v.to_string(start) },
-            Element::Object(v) => { v.to_string(start) },
-        }
     }
 }
