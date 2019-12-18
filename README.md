@@ -2,7 +2,7 @@
 
 ### what is this?
 
-It's a json schema (https://json-schema.org/)/json value generator from an own format.
+It's a json schema (https://json-schema.org/) / json value generator from an own format.
 
 ### why?
 
