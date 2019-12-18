@@ -84,3 +84,10 @@ main(main_option): object {
 ```
 
 Also i'm gonna add eamples. See `test_data` directory.
+
+
+#### Some tasks to do: 
+
+- [ ] remove all the panics. Parser should work with Result, not with panics
+- [ ] add `enum` for strings, numbers 
+- [ ] add `pattern` for strings
