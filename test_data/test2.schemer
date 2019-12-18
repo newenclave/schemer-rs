@@ -1,0 +1,6 @@
+main: object {
+    i: integer,
+    b: boolean = true
+} = {
+    i = 100, b = false
+}
