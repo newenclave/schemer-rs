@@ -1,0 +1,3 @@
+main(opts: { data: 1, values: { v1: true, v2: 0.5 } }): object {
+    i(opts: {max: 1, min: 100, nocheck: true }): integer = 50
+}
