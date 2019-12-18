@@ -88,6 +88,7 @@ pub enum PossibleArray<T: Clone> {
 
 impl<T> PossibleArray<T> where T: Clone {
     pub fn add_value(&mut self, value: T) {
+        println!("Adding value!");
         match self {
             PossibleArray::Value(val) => { *val = value },
             PossibleArray::Array(vec) => { vec.push(value) },

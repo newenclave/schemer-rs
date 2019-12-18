@@ -108,7 +108,7 @@ impl ToSchemerString for ObjectType {
     fn value_to(&self, shift: usize) -> String {
         match self.value() {
             PossibleArray::Array(arr) => {
-            let values = (**arr)
+                let values = (**arr)
                 .iter().map(|x| {
                     match &**x {
                         Some(field) => cast(field).value_to(shift + 1),
@@ -118,12 +118,15 @@ impl ToSchemerString for ObjectType {
                 format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
             },
             PossibleArray::Value(val) => {
-                let field_info = self.fields()
-                    .iter().map(|(k, v)| {
-                        values_to_string(v, shift + 1)
-                    }
-                ).collect::<Vec<String>>().join(",\n");
-                format!("{{\n{}\n{}}}", &field_info, utils::sh(shift))
+                let str_value = match &**val {
+                    Some(unboxed) => {
+                        unboxed.fields()
+                    },
+                    None => self.fields(),
+                }.iter().map(|(k, v)| {
+                    values_to_string(v, shift + 1)
+                }).collect::<Vec<String>>().join(",\n");
+                format!("{{\n{}\n{}}}", &str_value, utils::sh(shift))    
             },
         }
     }

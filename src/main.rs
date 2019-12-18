@@ -38,6 +38,12 @@ fn main() {
             },
         }
     } else {
-        println!("Use: schemer-rs <path_to_scheme_file>")
+        let v = "
+        main: object[] {
+            i: integer
+        } = [{i: 1}, {i: 2}, {i: 3}]
+        ".to_owned();
+        parse_format(&v);
+        // /println!("Use: schemer-rs <path_to_scheme_file>")
     }
 }
