@@ -154,6 +154,7 @@ impl ObjectType {
     pub fn fields(&self) -> &HashMap<String, FieldType> {
         &self.fields
     }
+    
     pub fn value(&self) -> &PossibleArray<Box<Option<ObjectType>>> {
         &self.value
     }

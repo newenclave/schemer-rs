@@ -131,8 +131,12 @@ mod helpers {
                         't' => result.push('\t'),
                         '\\' => result.push('\\'),
                         '\0' => result.push('\\'),
-                        ec => result.push(ec),
-                        val => { result.push('\\'); result.push(val) },
+                        val => if val == ec {
+                                result.push(ec);
+                            } else {
+                                result.push('\\'); 
+                                result.push(val);    
+                            },
                     }
                 },
                 val => result.push(val),
