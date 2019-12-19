@@ -10,7 +10,7 @@ it's written in Rust as an "helloworld" pet project. So with this project I want
 
 ### how does it work?
 
-You give schemer file, it returns json schema. But for now there is no json generator. So it just parses the own schema and generates the same schema.
+You give schemer file, it returns json schema or json values.
 
 ### depends?
 
@@ -31,7 +31,7 @@ object_name(options): type[] = value
 Here:
 `object_name` - any valid ident value or string with double quotes.  
 `(option)` - option list belongs to field  
-`type` - one of `string`, `integer`, `floating`, `Boolean`, `object`. Probably aliases will be added soon. Any field can be an array. `[]`  
+`type` - one of `string`, `integer`, `floating`, `boolean`, `object`. Probably aliases will be added soon. Any field can be an array. `[]`  
 
 ### To run
 
@@ -168,7 +168,7 @@ json_value output:
 ```js
 {
   "s": "one",
-  "i": 3,
+  "i": 1,
   "f": 0.5
 }
 ```
@@ -202,7 +202,7 @@ main: object {
 }
 ```
 
-Also i'm gonna add eamples. See `test_data` directory.
+Also i'm gonna add examples. See `test_data` directory.
 
 #### Some tasks to do
 
