@@ -211,4 +211,5 @@ Also i'm gonna add examples. See `test_data` directory.
 - [ ] add `pattern` for strings
 - [x] remove `unused` and clean the code out of unused
 - [x] adding json generators
-- [ ] adding negative numbers
+- [x] adding negative numbers
+- [ ] removing all copy-paste

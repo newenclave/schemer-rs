@@ -1,0 +1,10 @@
+main: object {
+    i0: integer = -1;
+    i1: integer -100..-1 = -50;
+    
+    f0: floating = -1;
+    f1: floating -100..-1 = -50;
+} = {
+    i: -1,
+    f: -0.525
+}

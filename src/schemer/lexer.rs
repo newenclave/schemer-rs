@@ -179,6 +179,8 @@ impl Lexer {
         lex.add_special("..", SpecialToken::Interval);
         lex.add_special(":", SpecialToken::Colon);
         lex.add_special(";", SpecialToken::Semicolon);
+        lex.add_special("-", SpecialToken::Minus);
+        lex.add_special("+", SpecialToken::Plus);
         lex.add_special("#", SpecialToken::Hash);
 
         lex.add_special("enum", SpecialToken::Enum);

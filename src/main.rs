@@ -61,11 +61,10 @@ fn main() {
     } else {
         let v = "
         main: object {
-            i: integer
+            i: integer -1..100 = -1
         } = {
-            b = false,
-            d = 0.9
-        }        
+            s = -0.9
+        }
         ".to_owned();
         parse_format(&v, &show_in_schemer);
         eprintln!("Use: schemer-rs <path_to_scheme_file>")

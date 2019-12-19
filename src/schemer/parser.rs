@@ -3,6 +3,10 @@ use super::tokens::{TokenInfo, Token, SpecialToken, TypeName};
 use super::objects::*;
 use super::object_base::*;
 
+struct ParserBackup {
+    current: usize,
+    next: usize,
+}
 
 pub struct Parser {
     tokens: Vec<TokenInfo>,
@@ -14,21 +18,35 @@ pub struct Parser {
 mod helpers {
     use super::*;
 
+    fn read_sign(parser: &mut Parser) -> i32 {
+        if Token::is_special(SpecialToken::Minus)(parser.current().token()) {
+            parser.advance();
+            -1_i32
+        } else if Token::is_special(SpecialToken::Plus)(parser.current().token()) {
+            parser.advance();
+            1_i32
+        } else {
+            1_i32
+        }
+    }
+
     pub trait WithInterval {
         fn set_min(&mut self, parser: &mut Parser);
         fn set_max(&mut self, parser: &mut Parser);
     }
-
+    
     impl WithInterval for IntegerType {
         fn set_min(&mut self, parser: &mut Parser) {
+            let sign = read_sign(parser) as i64;
             match &parser.current().token() {
-                Token::Integer(val) => self.set_min(*val),
+                Token::Integer(val) => self.set_min(*val * sign),
                 _ => (),
             }
         }
         fn set_max(&mut self, parser: &mut Parser) {
+            let sign = read_sign(parser) as i64;
             match &parser.current().token() {
-                Token::Integer(val) => self.set_max(*val),
+                Token::Integer(val) => self.set_max(*val * sign),
                 _ => (),
             }
         }
@@ -36,14 +54,18 @@ mod helpers {
 
     impl WithInterval for FloatingType {
         fn set_min(&mut self, parser: &mut Parser) {
+            let sign = read_sign(parser) as f64;
             match parser.current().token() {
-                Token::Floating(val) => self.set_min(*val),
+                Token::Floating(val) => self.set_min(*val * sign),
+                Token::Integer(val) => self.set_min(*val as f64 * sign),
                 _ => (),
             }
         }
         fn set_max(&mut self, parser: &mut Parser) {
+            let sign = read_sign(parser) as f64;
             match parser.current().token() {
-                Token::Floating(val) => self.set_max(*val),
+                Token::Floating(val) => self.set_max(*val * sign),
+                Token::Integer(val) => self.set_max(*val as f64 * sign),
                 _ => (),
             }
         }
@@ -108,23 +130,33 @@ mod helpers {
             }
         }
     }
-    
+
     impl ValueReadCheck for IntegerType {
         fn token_checker(val: &Token) -> bool {
-            val.is_integer()
+            match val {
+                Token::Integer(_) => true,
+                Token::Special(v) => match v {
+                    SpecialToken::Plus => true,
+                    SpecialToken::Minus => true,
+                    _ => false,
+                },
+                _ => false
+            }
         }
         fn expected() -> &'static str {
             "integer"
         }
         fn read_value(&mut self, parser: &mut Parser) {
+            let sign = read_sign(parser) as i64;
             match parser.current().token() {
                 Token::Integer(val) => {
-                    if !self.check_enum(*val) {
-                        parser.panic_current(&format!("Value {} is invalid for integer enum", *val));
-                    } else if !self.check_minmax(*val) {
-                        parser.panic_current(&format!("Value {} is invalid for integer interval", *val));
+                    let result = *val * sign; 
+                    if !self.check_enum(result) {
+                        parser.panic_current(&format!("Value {} is invalid for integer enum", result));
+                    } else if !self.check_minmax(result) {
+                        parser.panic_current(&format!("Value {} is invalid for integer interval", result));
                     } else {
-                        self.add_value(*val)
+                        self.add_value(result)
                     }
                 },
                 _ => ()
@@ -134,17 +166,28 @@ mod helpers {
 
     impl ValueReadCheck for FloatingType {
         fn token_checker(val: &Token) -> bool {
-            val.is_number()
+            match val {
+                Token::Integer(_) => true,
+                Token::Floating(_) => true,
+                Token::Special(v) => match v {
+                    SpecialToken::Plus => true,
+                    SpecialToken::Minus => true,
+                    _ => false,
+                },
+                _ => false
+            }
         }
         fn expected() -> &'static str {
             "floating or integer"
         }
         fn read_value(&mut self, parser: &mut Parser) {
+            let sign = read_sign(parser) as f64;
             let val = match parser.current().token() {
                 Token::Floating(val) => *val,
                 Token::Integer(val) => *val as f64,
                 _ => panic!("Should not be here")
-            };
+            } * sign;
+
             if !self.check_enum(val) {
                 parser.panic_current(&format!("Value {} is invalid for floating enum", val));
             } else if !self.check_minmax(val) {
@@ -264,6 +307,18 @@ impl Parser {
             next: if len == 0 { 0 } else { 1 },
             eof_token: TokenInfo::new(Token::Eof, (len, len)),
         }
+    }
+
+    fn backup(&self) -> ParserBackup {
+        ParserBackup {
+            current: self.current,
+            next: self.next,
+        }
+    }
+
+    fn restore(&mut self, bu: &ParserBackup) {
+        self.current = bu.current;
+        self.next = bu.next;        
     }
 
     pub fn advance(&mut self) -> bool {
@@ -508,6 +563,22 @@ impl Parser {
         return next;
     }
 
+    fn guess_number(&mut self) -> Element {
+        let bu = self.backup();
+        self.advance();
+        match self.next().token() {
+            Token::Integer(_) => { 
+                self.restore(&bu); 
+                Element::Integer(self.parse_value_for(IntegerType::new())) 
+            },
+            Token::Floating(_) => { 
+                self.restore(&bu); 
+                Element::Floating(self.parse_value_for(FloatingType::new())) 
+            },
+             _ => { self.panic_expect("number value"); Element::None },
+        }
+    }
+
     fn guess_element(&mut self) -> Element {
         match &self.next().token() {
             Token::Integer(_) => { Element::Integer(self.parse_value_for(IntegerType::new())) },
@@ -522,6 +593,10 @@ impl Parser {
                 SpecialToken::LBracket => { // any array 
                     self.advance();
                     self.read_any_array()
+                }, 
+                SpecialToken::Minus 
+                    | SpecialToken::Plus=> { // numbers 
+                    self.guess_number()
                 }, 
                 SpecialToken::Null => { // null
                     self.advance();

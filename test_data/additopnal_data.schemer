@@ -1,0 +1,6 @@
+main: object {
+    i: integer 0..10 = 5
+} = {
+    b = false,
+    d = -0.9
+}
