@@ -60,17 +60,14 @@ fn main() {
         }
     } else {
         let v = "
-        main: any = {
-            data: \"string value\",
-            i: 1000,
-            f: 0.5,
-            a: true,
-            b: false,
-            n: null,
-            aa: {}
-        }
+        main: object {
+            i: integer
+        } = {
+            b = false,
+            d = 0.9
+        }        
         ".to_owned();
-        parse_format(&v, &show_in_json_schema);
+        parse_format(&v, &show_in_schemer);
         eprintln!("Use: schemer-rs <path_to_scheme_file>")
     }
 }

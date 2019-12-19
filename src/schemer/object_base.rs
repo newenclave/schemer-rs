@@ -57,7 +57,7 @@ impl ObjectBase for ObjectType {
     }
     fn is_default(&self) -> bool {
         match self.value() {
-            PossibleArray::Value(v) => !v.is_none(),
+            PossibleArray::Value(v) => v.is_none(),
             PossibleArray::Array(v) => v.len() == 0,
         }
     }    

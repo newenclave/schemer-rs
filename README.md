@@ -210,4 +210,5 @@ Also i'm gonna add examples. See `test_data` directory.
 - [x] add `enum` for strings, numbers
 - [ ] add `pattern` for strings
 - [x] remove `unused` and clean the code out of unused
-- [ ] adding json generators
+- [x] adding json generators
+- [ ] adding negative numbers

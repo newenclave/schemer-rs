@@ -139,32 +139,22 @@ trait SchemaToValues {
 }
 
 trait SchField {
-    fn field(self, name: &str) -> FieldType;
     fn value(self) -> Element;
 }
 
 impl SchField for &str {
-    fn field(self, name: &str) -> FieldType {
-        FieldType::new(name.to_string(), Element::String(StringType::from(self)), Options::new())
-    }
     fn value(self) -> Element {
         Element::String(StringType::from(self))
     }
 }
 
 impl SchField for Element {
-    fn field(self, name: &str) -> FieldType {
-        FieldType::new(name.to_string(), self, Options::new())
-    }
     fn value(self) -> Element {
         self
     }
 }
 
 impl SchField for &Vec<String> {
-    fn field(self, name: &str) -> FieldType {
-        FieldType::new(name.to_string(), self.value(), Options::new())
-    }
     fn value(self) -> Element {
         let mut arr = StringType::new_array();
         for v in self {
@@ -175,9 +165,6 @@ impl SchField for &Vec<String> {
 }
 
 impl SchField for &Vec<i64> {
-    fn field(self, name: &str) -> FieldType {
-        FieldType::new(name.to_string(), self.value(), Options::new())
-    }
     fn value(self) -> Element {
         let mut arr = IntegerType::new_array();
         for v in self {
@@ -187,9 +174,6 @@ impl SchField for &Vec<i64> {
     }
 }
 impl SchField for &Vec<f64> {
-    fn field(self, name: &str) -> FieldType {
-        FieldType::new(name.to_string(), self.value(), Options::new())
-    }
     fn value(self) -> Element {
         let mut arr = FloatingType::new_array();
         for v in self {
@@ -200,16 +184,25 @@ impl SchField for &Vec<f64> {
 }
 
 impl SchField for ObjectType {
-    fn field(self, name: &str) -> FieldType {
-        FieldType::new(name.to_string(), Element::Object(ObjectType::from(self)), Options::new())
-    }
     fn value(self) -> Element {
         Element::Object(self)
     }
 }
 
+impl SchField for f64 {
+    fn value(self) -> Element {
+        Element::Floating(FloatingType::from(self))
+    }
+}
+
+impl SchField for i64 {
+    fn value(self) -> Element {
+        Element::Integer(IntegerType::from(self))
+    }
+}
+
 fn field<T: SchField>(name: &str, val: T) -> FieldType {
-    val.field(name)
+    FieldType::new(name.to_string(), val.value(), Options::new())
 }
 
 fn value<T: SchField>(val: T) -> Element {
@@ -255,6 +248,12 @@ impl SchemaToValues for IntegerType {
             Some(vals) => obj.add_field(field("enum", vals.values())),
             None => {},
         }
+        if self.interval().has_min() {
+            obj.add_field(field("minimum", self.interval().min(0)));            
+        }
+        if self.interval().has_max() {
+            obj.add_field(field("maximum", self.interval().max(0)));            
+        }
         if self.is_array() {
             let mut arr = ObjectType::new();
             arr.add_field(field("type", "array"));
@@ -273,6 +272,12 @@ impl SchemaToValues for FloatingType {
         match self.enum_values() {
             Some(vals) => obj.add_field(field("enum", vals.values())),
             None => {},
+        }
+        if self.interval().has_min() {
+            obj.add_field(field("minimum", self.interval().min(0.0)));            
+        }
+        if self.interval().has_max() {
+            obj.add_field(field("maximum", self.interval().max(0.0)));            
         }
         if self.is_array() {
             let mut arr = ObjectType::new();

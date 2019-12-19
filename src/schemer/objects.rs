@@ -85,6 +85,15 @@ impl <T> NumberType<T> where T: Numeric {
             enum_values: None,
         }
     }
+
+    pub fn from(val: T) -> Self {
+        NumberType {
+            value: PossibleArray::Value(val),
+            min_max: Interval::none(),
+            enum_values: None,
+        }
+    }
+
     pub fn add_value(&mut self, value: T) {
         self.value.add_value(value);
     }

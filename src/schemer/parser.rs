@@ -3,21 +3,6 @@ use super::tokens::{TokenInfo, Token, SpecialToken, TypeName};
 use super::objects::*;
 use super::object_base::*;
 
-/*
-pub struct ParserState {
-    current: usize,
-    next: usize,
-}
-
-impl ParserState {
-    pub fn new(cur: usize, nxt: usize) -> ParserState {
-        ParserState {
-            current: cur,
-            next: nxt,
-        }
-    }
-}
-*/
 
 pub struct Parser {
     tokens: Vec<TokenInfo>,
@@ -255,7 +240,12 @@ mod helpers {
                         }
                     },
                     None => {
-                        panic!("Object doesn't contain field with name '{}'", field_name);
+                        if parser.expect(&Token::is_special(SpecialToken::Colon)) ||
+                            parser.expect(&Token::is_special(SpecialToken::Equal)) {
+                            next.add_field(FieldType::new(field_name, parser.guess_element(), Options::new()));
+                        } else {
+                            panic!("Object doesn't contain field with name '{}' and it's type cannot be detected", field_name);
+                        }
                     },
                 }
                 parser.expect(&Token::is_special(SpecialToken::Comma));
@@ -275,17 +265,6 @@ impl Parser {
             eof_token: TokenInfo::new(Token::Eof, (len, len)),
         }
     }
-
-    /*
-    pub fn backup(&self) -> ParserState {
-        ParserState::new(self.current, self.next)
-    }
-
-    pub fn restore(&mut self, bkup: &ParserState) {
-        self.current = bkup.current;
-        self.next = bkup.next;
-    }
-    */
 
     pub fn advance(&mut self) -> bool {
         self.current = self.next;
