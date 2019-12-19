@@ -16,6 +16,19 @@ impl StringType {
             enum_values: None,
         }
     }
+    pub fn new_array() -> StringType {
+        StringType {
+            value: PossibleArray::Array(Vec::new()),
+            enum_values: None,
+        }
+    }
+    pub fn from(val: &str) -> StringType {
+        StringType {
+            value: PossibleArray::Value(val.to_string()),
+            enum_values: None,
+        }
+    }
+    
     pub fn check_enum(&self, val: &String) -> bool {
         match &self.enum_values {
             Some(vals) => vals.check(&val),
@@ -62,6 +75,13 @@ impl <T> NumberType<T> where T: Numeric {
     pub fn new() -> NumberType<T> {
         NumberType {
             value: PossibleArray::Value(T::zero()),
+            min_max: Interval::none(),
+            enum_values: None,
+        }
+    }
+    pub fn new_array() -> NumberType<T> {
+        NumberType {
+            value: PossibleArray::Array(Vec::new()),
             min_max: Interval::none(),
             enum_values: None,
         }
