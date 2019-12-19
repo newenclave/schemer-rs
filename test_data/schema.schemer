@@ -8,7 +8,11 @@ main: object {
         as: string[];
         b: boolean;
         ab: boolean[];
-        o: object;
-        ao: object[];
+        o: object {
+            test: object {}
+        };
+        ao: object[] {
+            test: object[] {}
+        };
     }
 }
