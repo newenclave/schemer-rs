@@ -217,7 +217,6 @@ fn value<T: SchField>(val: T) -> Element {
 }
 
 /// TODO: alot of copy-paste 
-
 impl SchemaToValues for Element {
     fn value_to_schema(&self) -> Element {
         match self {

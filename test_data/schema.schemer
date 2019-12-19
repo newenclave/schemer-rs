@@ -1,0 +1,14 @@
+main: object {
+    vals: object[] {
+        i: integer;
+        ai: integer[];
+        f: floating;
+        af: floating[];
+        s: string;
+        as: string[];
+        b: boolean;
+        ab: boolean[];
+        o: object;
+        ao: object[];
+    }
+}
