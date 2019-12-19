@@ -131,6 +131,48 @@ main(main_option): object {
 
 ```
 
+Enums: 
+
+```schemer
+main: object {
+    i: integer enum { 1, 3, 5, 7, 9 }        # defaul value is 1
+    s: string enum { "one", "two", "three" } # defaul value is "one"
+    f: floating enum { 0.5, 1, 1.5 }         # defaul value is 0.5
+}
+```
+
+json_schema output:
+
+```js
+{
+  "properties": {
+    "i": {
+      "enum": [1, 3, 5, 7, 9],
+      "type": "integer"
+    },
+    "f": {
+      "type": "number",
+      "enum": [0.5, 1, 1.5]
+    },
+    "s": {
+      "type": "string",
+      "enum": ["one", "two", "three"]
+    }
+  },
+  "type": "object"
+}
+```
+
+json_value output:
+
+```js
+{
+  "s": "one",
+  "i": 3,
+  "f": 0.5
+}
+```
+
 Any:
 
 ```schemer
