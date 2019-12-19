@@ -351,7 +351,8 @@ fn to_json_values_impl(name: &str, val: &Element, shift: usize) -> String {
 }
 
 pub fn to_json_values(val: &FieldType) -> String {
-    to_json_values_impl(val.name(), val.value(), 0)
+    element_to_json_values_impl(val.value(), 0)
+    //to_json_values_impl(val.name(), val.value(), 0)
 }
 
 fn to_json_schema_impl<T: SchemaToValues>(val: &T) -> Element {
@@ -369,5 +370,6 @@ pub fn to_json_schema(val: &FieldType) -> String {
         //Element::None => "".to_string(),
         _ => Element::None,
     };
-    to_json_values_impl(val.name(), &schema_obj, 0)
+    element_to_json_values_impl(&schema_obj, 0)
+    //to_json_values_impl(val.name(), &schema_obj, 0)
 }

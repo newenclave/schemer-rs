@@ -25,7 +25,7 @@ fn parse_format(obj: &str, call: &'static dyn Fn(&FieldType)) {
     let vec = lex.run(obj);
     let mut pars = Parser::new(Vec::new());
     match vec {
-        Err(expr) => println!("Parsing error: {}", expr),
+        Err(expr) => eprintln!("Parsing error: {}", expr),
         Ok(v) => {
             pars = Parser::new(v);
         },
@@ -38,7 +38,7 @@ fn parse_format(obj: &str, call: &'static dyn Fn(&FieldType)) {
 fn main() {
 
     let mut calls: HashMap<String, &'static dyn Fn(&FieldType)> = HashMap::new();
-    calls.insert("json_values".to_string(), &show_in_json_value);
+    calls.insert("json_value".to_string(), &show_in_json_value);
     calls.insert("json_schema".to_string(), &show_in_json_schema);
     calls.insert("schemer".to_string(), &show_in_schemer);
 
@@ -55,7 +55,7 @@ fn main() {
                 parse_format(obj, call);
             },
             Err(err) => {
-                println!("reading file {} error. {}", args[1], err);
+                eprintln!("reading file {} error. {}", args[1], err);
             },
         }
     } else {
@@ -71,6 +71,6 @@ fn main() {
         }
         ".to_owned();
         parse_format(&v, &show_in_json_schema);
-        println!("Use: schemer-rs <path_to_scheme_file>")
+        eprintln!("Use: schemer-rs <path_to_scheme_file>")
     }
 }

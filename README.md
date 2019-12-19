@@ -33,6 +33,12 @@ Here:
 `(option)` - option list belongs to field  
 `type` - one of `string`, `integer`, `floating`, `Boolean`, `object`. Probably aliases will be added soon. Any field can be an array. `[]`  
 
+### To run
+
+```bash
+$ ./schemer <path_to_schemer_file> [json_value | json_schema | schemer]
+```
+
 ### Examples?
 
 Here. Some examples could be invalid. I'm in process to writing/changing the code
@@ -50,6 +56,38 @@ main: object {
     i: integer = 1,
     f: floating
     s: string[] = ["Hello", "World!"]
+}
+```
+
+output json_schema:
+
+```js
+{
+  "properties": {
+    "i": {
+      "type": "integer"
+    },
+    "s": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "f": {
+      "type": "number"
+    }
+  },
+  "type": "object"
+}
+```
+
+output json_value:
+
+```js
+{
+  "f": 0,
+  "s": ["Hello", "World!"],
+  "i": 1
 }
 ```
 

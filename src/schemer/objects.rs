@@ -8,7 +8,6 @@ pub struct StringType {
     enum_values: Option<Enum<String>>,
 }
 
-
 impl StringType {
     pub fn new() -> StringType {
         StringType {
