@@ -93,6 +93,8 @@ main(main_option): object {
 
 ```
 
+Any:
+
 ```schemer
 main: object {
     any_object: any = {         # it's possible to define any

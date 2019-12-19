@@ -1,15 +1,26 @@
-//#![allow(unused)]
-
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 mod schemer;
+use schemer::objects::{FieldType};
 use schemer::lexer::{Lexer};
 use schemer::parser::Parser;
 use schemer::to_schemer::{field_to_string};
 use schemer::to_json::{to_json_values, to_json_schema};
 
+fn show_in_json_value(value: &FieldType) {
+    println!("{}", to_json_values(value));
+}
 
-fn parse_format(obj: &str, to: &str) {
+fn show_in_json_schema(value: &FieldType) {
+    println!("{}", to_json_schema(value));
+}
+
+fn show_in_schemer(value: &FieldType) {
+    println!("{}", field_to_string(value));
+}
+
+fn parse_format(obj: &str, call: &'static dyn Fn(&FieldType)) {
     let lex = Lexer::new();
     let vec = lex.run(obj);
     let mut pars = Parser::new(Vec::new());
@@ -21,22 +32,27 @@ fn parse_format(obj: &str, to: &str) {
     };
     
     let sss = pars.parse_field();
-    if to == "shcemer" {
-        println!("{}", field_to_string(&sss));
-    } else {
-        println!("{}", to_json_schema(&sss));
-    }
+    call(&sss);
 }
 
-
-
 fn main() {
+
+    let mut calls: HashMap<String, &'static dyn Fn(&FieldType)> = HashMap::new();
+    calls.insert("json_values".to_string(), &show_in_json_value);
+    calls.insert("json_schema".to_string(), &show_in_json_schema);
+    calls.insert("schemer".to_string(), &show_in_schemer);
+
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 {
+        let call_name = if args.len() > 2 { &args[2] } else { "schemer" };
+        let call = match calls.get(call_name) {
+            Some(func) => *func,
+            None => &show_in_schemer,
+        };
         let test_object = fs::read_to_string(&args[1]);
         match &test_object {
             Ok(obj) => {
-                parse_format(obj, "");
+                parse_format(obj, call);
             },
             Err(err) => {
                 println!("reading file {} error. {}", args[1], err);
@@ -54,7 +70,7 @@ fn main() {
             aa: {}
         }
         ".to_owned();
-        parse_format(&v, "");
+        parse_format(&v, &show_in_json_schema);
         println!("Use: schemer-rs <path_to_scheme_file>")
     }
 }
