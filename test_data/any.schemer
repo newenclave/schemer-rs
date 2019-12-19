@@ -1,5 +1,5 @@
 main: object {
-    valid_any: any = {         # it's possible to define any
+    any_object: any = {         # it's possible to define any
         data: "string value",
         i: 1000,
         f: 0.5,
@@ -10,6 +10,15 @@ main: object {
             some_nested: {}
         }
     };
-    valid_any_array: any = [];      # any is a spetial keyword, not a typename
-    #invalid_any_array: any[] = []; # any array cannot be defined with [] 
+    any_int: any = 10,
+    any_float: any = 10.5,
+    any_string: any = "this is an ant string"
+    eny_empty_array: any = []
+    valid_json_any: any = {
+        "data": "data",
+        "i": 100,
+        "b": [{}, 1, ""]
+    }
+    valid_any_array: any = [1, 1.5, "string", {}];  # any is a spetial keyword, not a typename
+    #invalid_any_array: any[] = [];                 # any array cannot be defined with [] 
 }

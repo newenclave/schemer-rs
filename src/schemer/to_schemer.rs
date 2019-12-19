@@ -150,7 +150,11 @@ impl ToSchemerString for ObjectType {
                         None => String::new(),
                     }
                 }).collect::<Vec<String>>().join(", ");
-                format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
+                if values.len() == 0 {
+                    "[]".to_string()
+                } else {
+                    format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
+                }
             },
             PossibleArray::Value(val) => {
                 let str_value = match &**val {
@@ -161,7 +165,11 @@ impl ToSchemerString for ObjectType {
                 }.iter().map(|(_, v)| {
                     values_to_string(v, shift + 1)
                 }).collect::<Vec<String>>().join(",\n");
-                format!("{{\n{}\n{}}}", &str_value, utils::sh(shift))    
+                if str_value.len() == 0 {
+                    "{}".to_string()
+                } else {
+                    format!("{{\n{}\n{}}}", &str_value, utils::sh(shift))
+                }
             },
         }
     }
@@ -169,27 +177,28 @@ impl ToSchemerString for ObjectType {
 
 impl ToSchemerString for AnyType {
     fn field_to(&self, _: usize) -> String {
-        format!("any{}", 
-            if self.is_array() { "[]" } else { "" },
-        )
+        "any".to_string()
     }
-
     fn value_to(&self, shift: usize) -> String {
         match self.value() {
             PossibleArray::Array(arr) => {
                 let values = (**arr)
                 .iter().map(|x| {
                     match &**x {
-                        Some(field) => cast(field).value_to(shift),
+                        Some(field) => cast(field).value_to(shift + 1),
                         None => "null".to_string(),
                     }
                 }).collect::<Vec<String>>().join(", ");
-                format!("[\n{}{}\n{}]", utils::sh(shift), values, utils::sh(shift))
+                if values.len() == 0 {
+                    "[]".to_string()
+                } else {
+                    format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
+                }
             },
             PossibleArray::Value(val) => {
                 match &**val {
                     Some(unboxed) => {
-                        cast(unboxed).value_to(shift + 1)
+                        cast(unboxed).value_to(shift)
                     },
                     None => "null".to_string(),
                 }

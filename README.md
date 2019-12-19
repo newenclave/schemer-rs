@@ -93,6 +93,33 @@ main(main_option): object {
 
 ```
 
+```schemer
+main: object {
+    any_object: any = {         # it's possible to define any
+        data: "string value",
+        i: 1000,
+        f: 0.5,
+        a: true,
+        b: false,
+        n: null,
+        aa: {
+            some_nested: {}
+        }
+    };
+    any_int: any = 10,
+    any_float: any = 10.5,
+    any_string: any = "this is an ant string"
+    eny_empty_array: any = []
+    valid_json_any: any = {     # a valid json object can be used here
+        "data": "data",
+        "i": 100,
+        "b": [{}, 1, ""]
+    }
+    valid_any_array: any = [1, 1.5, "string", {}];  # any is a spetial keyword, not a typename
+    #invalid_any_array: any[] = [];                 # any array cannot be defined with [] 
+}
+```
+
 Also i'm gonna add eamples. See `test_data` directory.
 
 #### Some tasks to do
