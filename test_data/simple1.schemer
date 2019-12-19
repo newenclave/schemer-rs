@@ -1,0 +1,5 @@
+main: object {
+    i: integer = 1,
+    f: floating
+    s: string[] = ["Hello", "World!"]
+}
