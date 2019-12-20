@@ -163,6 +163,15 @@ impl SchField for &Vec<String> {
         Element::String(arr)
     }
 }
+impl SchField for &Vec<&str> {
+    fn value(self) -> Element {
+        let mut arr = StringType::new_array();
+        for v in self {
+            arr.add_value(v);
+        };
+        Element::String(arr)
+    }
+}
 
 impl SchField for &Vec<i64> {
     fn value(self) -> Element {
@@ -370,7 +379,7 @@ impl SchemaToValues for AnyType {
                     Some(val) => to_json_schema_impl(val, opts),
                     None => {
                         let mut obj = ObjectType::new();
-                        obj.add_field(field("type", "object"));
+                        obj.add_field(field("type", &vec!("object", "null")));
                         set_common_schema_options(&mut obj, opts);
                         value(obj)
                     },
