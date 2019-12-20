@@ -4,3 +4,8 @@ rustflags = [
     "-Ctarget-cpu=x86-64",
     "-Ctarget-feature=+crt-static",
 ]
+
+#[target.'cfg(all)']
+#rustflags = [
+#    "-Ctarget-feature=+crt-static",
+#]

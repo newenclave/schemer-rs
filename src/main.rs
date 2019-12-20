@@ -60,13 +60,9 @@ fn main() {
         }
     } else {
         let v = "
-        main: object {
-            i: integer -1..100 = -1
-        } = {
-            s = -0.9
-        }
+        object: any = [null, {}]
         ".to_owned();
-        parse_format(&v, &show_in_schemer);
+        parse_format(&v, &show_in_json_schema);
         eprintln!("Use: schemer-rs <path_to_scheme_file>")
     }
 }

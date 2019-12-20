@@ -380,8 +380,11 @@ impl Parser {
         let name = match &self.next().token() {
             Token::Ident(value) => { Some(String::from(value)) },
             Token::String(value) => { Some(String::from(value)) },
-            Token::Boolean(value) => { Some(value.to_string()) },
-            _ => None,
+            _ => if self.next().literal().len() > 0 {
+                Some(String::from(self.next().literal()))
+            } else {
+                None
+            },
         };
         match name {
             Some(value) => { self.advance(); (true, value) },
@@ -602,9 +605,9 @@ impl Parser {
                     self.advance();
                     Element::Any(AnyType::new())
                 } 
-                _ => Element::None,
+                _ => { self.panic_expect("valid data"); Element::None },
             }
-            _ => Element::None,
+            _ => { self.panic_expect("valid data"); Element::None },
         }
     }
 

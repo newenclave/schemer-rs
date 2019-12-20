@@ -234,7 +234,11 @@ impl Lexer {
                         if Token::is_special(SpecialToken::Hash)(&expr.0.value) {
                             scanner.advance_while(|c| { c != '\n' });
                         } else {
-                            result.push(TokenInfo::new(expr.0.value.clone(), pos));
+                            let mut found = TokenInfo::new(expr.0.value.clone(), pos);
+                            if expr.0.possible_ident {
+                                found.set_literal(String::from(&backup.get()[0..expr.1]));
+                            }
+                            result.push(found);
                         }
                     }
                 },

@@ -134,6 +134,14 @@ impl TokenInfo {
         self.position
     }
 
+    pub fn literal(&self) -> &str {
+        return &self.literal
+    }
+
+    pub fn set_literal(&mut self, val: String) {
+        self.literal = val;
+    }
+
     pub fn to_string(&self) -> String {
         match &self.token {
             Token::None => format!("None"),
