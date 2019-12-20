@@ -230,13 +230,12 @@ impl SchemaToValues for Element {
             Element::Integer(v) => { to_json_schema_impl(v, opts) },
             Element::Floating(v) => { to_json_schema_impl(v, opts) },
             Element::Object(v) => { to_json_schema_impl(v, opts) },
-            // Element::Any(v) => { call_value_to_json(v, shift) },
+            Element::Any(v) => { to_json_schema_impl(v, opts) },
             //Element::None => "".to_string(),
             _ => Element::None,
         }
     }
 }
-
 
 impl SchemaToValues for BooleanType {
     fn value_to_schema(&self, opts: &Options) -> Element {
@@ -291,10 +290,10 @@ impl SchemaToValues for FloatingType {
             None => {},
         }
         if self.interval().has_min() {
-            obj.add_field(field("minimum", self.interval().min(0.0)));            
+            obj.add_field(field("minimum", self.interval().min(0.0)));
         }
         if self.interval().has_max() {
-            obj.add_field(field("maximum", self.interval().max(0.0)));            
+            obj.add_field(field("maximum", self.interval().max(0.0)));
         }
         if self.is_array() {
             let mut arr = ObjectType::new();
@@ -363,6 +362,30 @@ impl SchemaToValues for ObjectType {
     }
 }
 
+impl SchemaToValues for AnyType {
+    fn value_to_schema(&self, opts: &Options) -> Element {
+        match self.value() {
+            PossibleArray::Value(opt_val) => {
+                match &**opt_val {
+                    Some(val) => to_json_schema_impl(val, opts),
+                    None => {
+                        let mut obj = ObjectType::new();
+                        obj.add_field(field("type", "object"));
+                        set_common_schema_options(&mut obj, opts);
+                        value(obj)
+                    },
+                }
+            }
+            PossibleArray::Array(arr) => {
+                let mut obj = ObjectType::new();
+                set_common_schema_options(&mut obj, opts);
+                obj.add_field(field("type", "array"));
+                value(obj)
+            },
+        }
+    }
+}
+
 fn call_value_to_json<T: ValuesToJson + ObjectBase>(val: &T, shift: usize) -> String {
     val.value_to_json(shift)
 }
@@ -402,7 +425,7 @@ pub fn to_json_schema(val: &FieldType) -> String {
         Element::Integer(v) => { to_json_schema_impl(v, val.options()) },
         Element::Floating(v) => { to_json_schema_impl(v, val.options()) },
         Element::Object(v) => { to_json_schema_impl(v, val.options()) },
-        // Element::Any(v) => { call_value_to_json(v, shift) },
+        Element::Any(v) => { to_json_schema_impl(v, val.options()) },
         //Element::None => "".to_string(),
         _ => Element::None,
     };
