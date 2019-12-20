@@ -1,0 +1,6 @@
+main: object {
+    r_i(required): integer; 
+    r_f(required): floating; 
+    nr_i(required: false): integer; 
+    nr_f(required: 100): integer; 
+}

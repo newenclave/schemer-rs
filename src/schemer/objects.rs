@@ -173,6 +173,17 @@ impl BooleanType {
         &self.value
     }
 
+    pub fn get_value(&self) -> bool {
+        match &self.value {
+            PossibleArray::Value(val) => *val,
+            PossibleArray::Array(arr) => if arr.len() > 0 {
+                arr[0]
+            } else {
+                false
+            },
+        }
+    }
+
     pub fn set_value(&mut self, val: PossibleArray<bool>) {
         self.value = val;
     }
@@ -181,7 +192,6 @@ impl BooleanType {
 #[derive(Clone)]
 pub struct ObjectType {
     value: PossibleArray<Box<Option<ObjectType>>>,
-    opts: Options,
     fields: HashMap<String, FieldType>,
 }
 
@@ -189,7 +199,6 @@ impl ObjectType {
     pub fn new() -> ObjectType {
         ObjectType {
             value: PossibleArray::Value(Box::new(None)),
-            opts: Options::new(),
             fields: HashMap::new(),
         }
     }
@@ -232,20 +241,17 @@ impl ObjectType {
 #[derive(Clone)]
 pub struct AnyType {
     value: PossibleArray<Box<Option<Element>>>,
-    opts: Options,
 }
 
 impl AnyType {
     pub fn new() -> AnyType {
         AnyType {
             value: PossibleArray::Value(Box::new(None)),
-            opts: Options::new(),
         }
     }
     pub fn new_array() -> AnyType {
         AnyType {
             value: PossibleArray::new_array(),
-            opts: Options::new(),
         }
     }
     pub fn add_value(&mut self, value: Element) {
@@ -280,6 +286,17 @@ impl Options {
             values: HashMap::new(),
         }
     }
+    
+    pub fn has_bool(&self, key: &str) -> bool {
+        match self.values.get(key) {
+            Some(expr) => match expr {
+                Element::Boolean(opt) => opt.get_value(),
+                _ => false,
+            },
+            None => false,
+        }
+    }
+
     pub fn empty(&self) -> bool {
         self.values.len() == 0
     }

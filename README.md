@@ -131,7 +131,7 @@ main(main_option): object {
 
 ```
 
-Enums: 
+Enums:
 
 ```schemer
 main: object {

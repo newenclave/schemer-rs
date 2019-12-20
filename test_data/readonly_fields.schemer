@@ -1,0 +1,10 @@
+root: object {
+    flag(readonly, required): boolean;
+    iro(readonly): integer;
+    sro(readonly): string;
+    aro(readonly): object[] {
+        nro: boolean;
+        some_data(readonly): string;
+    } = [{}, {}, {}]
+    fro: floating[] = [0, 0.5, 1, 1.5, 2]
+}
