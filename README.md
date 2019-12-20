@@ -173,6 +173,89 @@ json_value output:
 }
 ```
 
+Optopns:
+
+```schemer
+root: object {
+    flag(readonly, required): boolean;
+    iro(readonly): integer;
+    sro(readonly): string;
+    aro(readonly): object[] {
+        nro: boolean;
+        some_data(readonly): string;
+    } = [{}, {}, {}]
+    fro: floating[] = [0, 0.5, 1, 1.5, 2]
+}
+```
+
+json_schema:
+
+```js
+{
+  "required": ["flag"],
+  "type": "object",
+  "properties": {
+    "sro": {
+      "type": "string",
+      "readonly": true
+    },
+    "fro": {
+      "items": {
+        "type": "number"
+      },
+      "type": "array"
+    },
+    "aro": {
+      "items": {
+        "type": "object",
+        "properties": {
+          "some_data": {
+            "type": "string",
+            "readonly": true
+          },
+          "nro": {
+            "type": "boolean"
+          }
+        }
+      },
+      "type": "array",
+      "readonly": true
+    },
+    "flag": {
+      "type": "boolean",
+      "readonly": true
+    },
+    "iro": {
+      "readonly": true,
+      "type": "integer"
+    }
+  }
+}
+```
+
+json vaue:
+
+```js
+{
+  "sro": "",
+  "iro": 0,
+  "aro": [
+    {
+      "nro": false,
+      "some_data": ""
+    }, {
+      "nro": false,
+      "some_data": ""
+    }, {
+      "nro": false,
+      "some_data": ""
+    }
+  ],
+  "fro": [0, 0.5, 1, 1.5, 2],
+  "flag": false
+}
+```
+
 Any:
 
 ```schemer
