@@ -1,0 +1,10 @@
+main: any = {
+    object: {
+        enum = 100,
+        false = 5.5
+        true: false,
+        string: {
+            null: [1, 2, "one", false, null: {}]
+        }
+    }
+}
