@@ -60,7 +60,7 @@ fn main() {
         }
     } else {
         let v = "
-        object: any = [null, {}]
+        object: any = [null, {}, 0xdadada ]
         ".to_owned();
         parse_format(&v, &show_in_json_schema);
         eprintln!("Use: schemer-rs <path_to_scheme_file>")

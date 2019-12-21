@@ -4,7 +4,7 @@ main: any = {
         false = 5.5
         true: false,
         string: {
-            null: [1, 2, "one", false, null: {}]
+            null: [1, 2, "one", false, null, 0xdadada]
         }
     }
 }

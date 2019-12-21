@@ -22,6 +22,8 @@ pub enum SpecialToken {
     Null, // null
     Hash, // #
 
+    HexBegin, // 0x, 0X
+
     Interval, // ..
 }
 
@@ -173,6 +175,7 @@ impl TokenInfo {
                 SpecialToken::Plus => "+".to_string(),
                 SpecialToken::Minus => "-".to_string(),
                 SpecialToken::Hash => "#".to_string(),
+                SpecialToken::HexBegin => "0x".to_string(),
                 SpecialToken::Enum => "enum".to_string(),
                 SpecialToken::Null => "null".to_string(),
             },

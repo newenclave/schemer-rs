@@ -15,12 +15,12 @@ mod utils {
         SHIFT.repeat(shift)
     }
     pub fn is_ident_string(val: &str) -> bool {
-        !val.chars().find(|c| {
+        val.chars().find(|c| {
             !(c.is_ascii_alphabetic() || c.is_digit(10) || *c == '_') 
         }).is_none()
     }
     pub fn quote(val: &str) -> String {
-        return if is_ident_string(val) { format!("\"{}\"", val) } else { val.to_string() }
+        return if !is_ident_string(val) { format!("\"{}\"", val) } else { val.to_string() }
     }
 }
 
@@ -121,7 +121,7 @@ impl<T> ToSchemerString for NumberType<T> where T: Numeric, T: Clone {
                 format!("[{}]", &utils::string_join(&arr, ", "))
             },
             PossibleArray::Value(val) => {
-                format!("{:.8}", &val.to_string())
+                val.to_string()
             },
         }
     }

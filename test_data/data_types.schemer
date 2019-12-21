@@ -1,0 +1,18 @@
+main: object {
+    integer: integer = 1234567890,
+    negative_integer: integer = -1234567890
+    hex_integer: integer = 0x12345678,
+    negative_hex_integer: integer = -0x12345678
+    oct_integer: integer = 01234567,
+    negative_oct_integer: integer = 01234567
+
+    floating: floating = 123456789.123456789
+    negative_floating: floating = -123456789.123456789
+
+    string: string = "This is a string!"
+    object: object { object: object {} }
+
+    boolean: boolean = true
+
+    any: any = null
+}

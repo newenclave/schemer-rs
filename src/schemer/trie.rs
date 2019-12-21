@@ -30,7 +30,7 @@ impl<T> Trie<T> {
             match next {
                 Some(expr) => {
                     root = &expr;
-                    if !root.data.is_none() {
+                    if root.data.is_some() {
                         last = root.value_ref();
                         last_set = true;
                     }

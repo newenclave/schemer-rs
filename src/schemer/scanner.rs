@@ -29,6 +29,13 @@ impl<'a> Scanner<'a> {
         self.top
     }
 
+    pub fn next(&self) -> char {
+        match self.current.chars().next() {
+            Some(c) => utils::get_top(&self.current[c.len_utf8()..]),
+            None => '\0',
+        }
+    }
+
     pub fn position(&self) -> (usize, usize) {
         (self.position.0, self.position.1)
     }

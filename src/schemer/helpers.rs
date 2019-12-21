@@ -27,10 +27,10 @@ impl<T> Interval<T> where T: std::cmp::PartialOrd + Copy {
     }
 
     pub fn has_min(&self) -> bool {
-        !self.min_max.0.is_none()
+        self.min_max.0.is_some()
     }
     pub fn has_max(&self) -> bool {
-        !self.min_max.1.is_none()
+        self.min_max.1.is_some()
     }
     pub fn has_minmax(&self) -> bool {
         self.has_min() || self.has_max()
@@ -61,7 +61,7 @@ impl<T> Enum<T> where T: std::cmp::PartialEq + Clone {
         }
     }
     pub fn check(&self, val: &T) -> bool {
-        !self.values.iter().find(|&x| *val == *x).is_none()
+        self.values.iter().find(|&x| *val == *x).is_some()
     }
     pub fn try_add(&mut self, val: T) -> bool {
         if self.check(&val) {

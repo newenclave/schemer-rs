@@ -27,6 +27,17 @@ mod helpers {
         Integer(i64),
         Floating(f64),
     }
+
+    pub fn scan_integer(scan: &mut Scanner, base: u32) -> i64 {
+        let mut d: i64 = 0;
+        while !scan.eol() && scan.top().is_digit(base) {
+            d *= base as i64;
+            d += scan.top().to_digit(base).unwrap() as i64;
+            scan.advance();
+        }
+        return d;
+    }
+
     pub fn scan_number(scan: &mut Scanner) -> Number {
 
         let mut d: i64 = 0;
@@ -183,6 +194,9 @@ impl Lexer {
         lex.add_special("+", SpecialToken::Plus);
         lex.add_special("#", SpecialToken::Hash);
 
+        lex.add_special("0x", SpecialToken::HexBegin);
+        lex.add_special("0X", SpecialToken::HexBegin);
+
         lex.add_special("enum", SpecialToken::Enum);
         lex.add_special("null", SpecialToken::Null);
 
@@ -231,9 +245,22 @@ impl Lexer {
                         ival.push_str(&scan_ident(&mut scanner));
                         result.push(TokenInfo::new(Token::Ident(ival), pos));
                     } else {
-                        if Token::is_special(SpecialToken::Hash)(&expr.0.value) {
-                            scanner.advance_while(|c| { c != '\n' });
-                        } else {
+
+                        if !match &expr.0.value {
+                            Token::Special(spec) => match spec {
+                                SpecialToken::Hash => {
+                                    scanner.advance_while(|c| { c != '\n' });
+                                    true
+                                },
+                                SpecialToken::HexBegin => {
+                                    let val = scan_integer(&mut scanner, 16);
+                                    result.push(TokenInfo::new(Token::Integer(val), pos));
+                                    true
+                                },
+                                _ => false,
+                            },
+                            _ => false,
+                        } {
                             let mut found = TokenInfo::new(expr.0.value.clone(), pos);
                             if expr.0.possible_ident {
                                 found.set_literal(String::from(&backup.get()[0..expr.1]));
@@ -243,7 +270,10 @@ impl Lexer {
                     }
                 },
                 None => {
-                    if scanner.top().is_digit(10) {
+                    if scanner.top() == '0' && scanner.next() != '.' {
+                        let num = scan_integer(&mut scanner, 8);
+                        result.push(TokenInfo::new(Token::Integer(num), pos));
+                    } else if scanner.top().is_digit(10) {
                         let num = scan_number(&mut scanner);
                         match num {
                             Number::Integer(i) => result.push(TokenInfo::new(Token::Integer(i), pos)),

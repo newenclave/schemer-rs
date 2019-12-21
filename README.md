@@ -1,5 +1,6 @@
 # schemer
 
+
 ### what is this?
 
 It's a json schema (https://json-schema.org/) / json value generator from an own format.
@@ -286,6 +287,10 @@ main: object {
 ```
 
 Also i'm gonna add examples. See `test_data` directory.
+
+#### Thanks 
+
+To all users of https://t.me/rust_beginners_ru
 
 #### Some tasks to do
 
