@@ -244,30 +244,22 @@ impl Lexer {
                         let mut ival = String::from(&backup.get()[0..expr.1]);
                         ival.push_str(&scan_ident(&mut scanner));
                         result.push(TokenInfo::new(Token::Ident(ival), pos));
-                    } else {
-
-                        if !match &expr.0.value {
-                            Token::Special(spec) => match spec {
-                                SpecialToken::Hash => {
-                                    scanner.advance_while(|c| { c != '\n' });
-                                    true
-                                },
-                                SpecialToken::HexBegin => {
-                                    let val = scan_integer(&mut scanner, 16);
-                                    result.push(TokenInfo::new(Token::Integer(val), pos));
-                                    true
-                                },
-                                _ => false,
-                            },
-                            _ => false,
-                        } {
+                    } else { match &expr.0.value {
+                        Token::Special(SpecialToken::Hash) => {
+                            scanner.advance_while(|c| { c != '\n' });
+                        },
+                        Token::Special(SpecialToken::HexBegin) => {
+                            let val = scan_integer(&mut scanner, 16);
+                            result.push(TokenInfo::new(Token::Integer(val), pos));
+                        },
+                        _ => {
                             let mut found = TokenInfo::new(expr.0.value.clone(), pos);
                             if expr.0.possible_ident {
                                 found.set_literal(String::from(&backup.get()[0..expr.1]));
                             }
                             result.push(found);
                         }
-                    }
+                    }}
                 },
                 None => {
                     if scanner.top() == '0' && scanner.next() != '.' {
