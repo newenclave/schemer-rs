@@ -31,8 +31,10 @@ fn parse_format(obj: &str, call: &'static dyn Fn(&FieldType)) {
         },
     };
     
-    let sss = pars.parse_field();
-    call(&sss);
+    match &pars.parse_field() {
+        Ok(val) => call(val),
+        Err(err) => println!("Parser error: {}", err.msg()),
+    };
 }
 
 fn main() {
@@ -60,7 +62,7 @@ fn main() {
         }
     } else {
         let v = "
-        object: any = [null, {}, 0xdadada ]
+        object: any = [null, {}, ;0xdadada ]
         ".to_owned();
         parse_format(&v, &show_in_json_schema);
         eprintln!("Use: schemer-rs <path_to_scheme_file>")

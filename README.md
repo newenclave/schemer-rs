@@ -294,7 +294,7 @@ To all users of https://t.me/rust_beginners_ru
 
 #### Some tasks to do
 
-- [ ] remove all the panics. Parser should work with Result, not with panics
+- [x] remove all the panics. Parser should work with Result, not with panics
 - [x] add `enum` for strings, numbers
 - [ ] add `pattern` for strings
 - [x] remove `unused` and clean the code out of unused
