@@ -143,9 +143,11 @@ mod helpers {
                 _ => false
             }
         }
+        
         fn expected() -> &'static str {
             "integer"
         }
+
         fn read_value(&mut self, parser: &mut Parser) {
             let sign = read_sign(parser) as i64;
             match parser.current().token() {

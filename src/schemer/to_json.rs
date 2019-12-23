@@ -136,6 +136,29 @@ mod to_json_value {
         }
     }
 
+    /// To value
+    fn call_value_to_json<T: to_json_value::ValuesToJson + ObjectBase>(val: &T, shift: usize) -> String {
+        val.value_to_json(shift)
+    }
+
+    pub fn element_to_json_values_impl(val: &Element, shift: usize) -> String {
+        match val {
+            Element::Boolean(v) => { call_value_to_json(v, shift) },
+            Element::String(v) => { call_value_to_json(v, shift) },
+            Element::Integer(v) => { call_value_to_json(v, shift) },
+            Element::Floating(v) => { call_value_to_json(v, shift) },
+            Element::Object(v) => { call_value_to_json(v, shift) },
+            Element::Any(v) => { call_value_to_json(v, shift) },
+            Element::None => "".to_string(),
+        }
+    }
+
+    fn to_json_values_impl(name: &str, val: &Element, shift: usize) -> String {
+        format!("{}\"{}\": {}", utils::sh(shift), 
+            name,
+            element_to_json_values_impl(val, shift)
+        )
+    }
 }
 
 mod to_json_schema {
@@ -402,54 +425,28 @@ mod to_json_schema {
         }
     }
 
-}
-
-/// To value
-fn call_value_to_json<T: to_json_value::ValuesToJson + ObjectBase>(val: &T, shift: usize) -> String {
-    val.value_to_json(shift)
-}
-
-fn element_to_json_values_impl(val: &Element, shift: usize) -> String {
-    match val {
-        Element::Boolean(v) => { call_value_to_json(v, shift) },
-        Element::String(v) => { call_value_to_json(v, shift) },
-        Element::Integer(v) => { call_value_to_json(v, shift) },
-        Element::Floating(v) => { call_value_to_json(v, shift) },
-        Element::Object(v) => { call_value_to_json(v, shift) },
-        Element::Any(v) => { call_value_to_json(v, shift) },
-        Element::None => "".to_string(),
+    pub fn to_json_schema_impl<T: to_json_schema::SchemaToValues>(val: &T, opts: &Options) -> Element {
+        val.value_to_schema(opts)
     }
 }
 
-fn to_json_values_impl(name: &str, val: &Element, shift: usize) -> String {
-    format!("{}\"{}\": {}", utils::sh(shift), 
-        name,
-        element_to_json_values_impl(val, shift)
-    )
-}
-
 pub fn to_json_values(val: &FieldType) -> String {
-    element_to_json_values_impl(val.value(), 0)
+    to_json_value::element_to_json_values_impl(val.value(), 0)
     //to_json_values_impl(val.name(), val.value(), 0)
 }
 
-
-/////////// To Schema
-fn to_json_schema_impl<T: to_json_schema::SchemaToValues>(val: &T, opts: &Options) -> Element {
-    val.value_to_schema(opts)
-}
-
 pub fn to_json_schema(val: &FieldType) -> String {
+    use to_json_schema::to_json_schema_impl as call_impl;
     let schema_obj = match val.value() {
-        Element::Boolean(v) => { to_json_schema_impl(v, val.options()) },
-        Element::String(v) => { to_json_schema_impl(v, val.options()) },
-        Element::Integer(v) => { to_json_schema_impl(v, val.options()) },
-        Element::Floating(v) => { to_json_schema_impl(v, val.options()) },
-        Element::Object(v) => { to_json_schema_impl(v, val.options()) },
-        Element::Any(v) => { to_json_schema_impl(v, val.options()) },
+        Element::Boolean(v) => { call_impl(v, val.options()) },
+        Element::String(v) => { call_impl(v, val.options()) },
+        Element::Integer(v) => { call_impl(v, val.options()) },
+        Element::Floating(v) => { call_impl(v, val.options()) },
+        Element::Object(v) => { call_impl(v, val.options()) },
+        Element::Any(v) => { call_impl(v, val.options()) },
         //Element::None => "".to_string(),
         _ => Element::None,
     };
-    element_to_json_values_impl(&schema_obj, 0)
+    to_json_value::element_to_json_values_impl(&schema_obj, 0)
     //to_json_values_impl(val.name(), &schema_obj, 0)
 }
