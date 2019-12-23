@@ -185,11 +185,11 @@ mod helpers {
     impl ValueReadCheck for FloatingType {
         fn token_checker(val: &Token) -> bool {
             match val {
-                Token::Integer(_) => true,
-                Token::Floating(_) => true,
+                Token::Integer(_) 
+                | Token::Floating(_) => true,
                 Token::Special(v) => match v {
-                    SpecialToken::Plus => true,
-                    SpecialToken::Minus => true,
+                    SpecialToken::Plus 
+                    | SpecialToken::Minus => true,
                     _ => false,
                 },
                 _ => false
