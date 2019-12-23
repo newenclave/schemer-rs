@@ -665,32 +665,14 @@ impl Parser {
         self.advance();
         let element = match &self.current().token() {
             Token::Type(name) => match name {
-                TypeName::TypeString => {
-                    let val = self.parse_string()?;
-                    Element::String(val)
-                },
-                TypeName::TypeInteger => { 
-                    let val = self.parse_integer()?;
-                    Element::Integer(val) 
-                },
-                TypeName::TypeFloating => {
-                    let val = self.parse_floating()?;
-                    Element::Floating(val)
-                },
-                TypeName::TypeBoolean => {
-                    let val = self.parse_boolean()?;
-                    Element::Boolean(val)
-                },
-                TypeName::TypeObject => { 
-                    let val = self.parse_object()?;
-                    Element::Object(val)
-                },
-                TypeName::TypeAny => {
-                    let val = self.parse_any()?;
-                    Element::Any(val)
-                },
+                TypeName::TypeString => Element::String(self.parse_string()?),
+                TypeName::TypeInteger => Element::Integer(self.parse_integer()?),
+                TypeName::TypeFloating => Element::Floating(self.parse_floating()?),
+                TypeName::TypeBoolean => Element::Boolean(self.parse_boolean()?),
+                TypeName::TypeObject => Element::Object(self.parse_object()?),
+                TypeName::TypeAny => Element::Any(self.parse_any()?),
             },
-            _ => { return Err(self.panic_current("typename")); }
+            _ => { return Err(self.panic_current("should be a typename")); }
         };
         Ok(FieldType::new(name, element, opts))
     }
