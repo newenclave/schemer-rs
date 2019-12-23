@@ -468,12 +468,12 @@ impl Parser {
         Ok(())
     }
 
-    fn read_value<T: helpers::ValueReadCheck + ObjectBase>(&mut self, output: &mut T) -> Result<bool, ParserError> {
+    fn read_value<T: helpers::ValueReadCheck + ObjectBase>(&mut self, output: &mut T) -> Result<(), ParserError> {
         if self.expect(&Token::is_special(SpecialToken::Equal)) || 
             self.expect(&Token::is_special(SpecialToken::Colon)) {
             self.read_value_nocheck(output)?;
         }
-        Ok(true)
+        Ok(())
     }
 
     fn try_read_array<T: helpers::ValueReadCheck>(&mut self, output: &mut T) -> Result<(), ParserError> {
