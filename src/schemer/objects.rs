@@ -276,6 +276,48 @@ pub enum Element {
     Any(AnyType),
 }
 
+impl Element {
+    #![allow(unused)]
+    pub fn as_string(&self) -> Option<&str> {
+        match &self {
+            Element::String(val) => match val.value().as_value() {
+                Some(v) => Some(&v),
+                None => None,
+            },
+            _ => None
+        }
+    }
+    pub fn as_integer(&self) -> Option<i64> {
+        match self {
+            Element::Integer(val) => match val.value().as_value() {
+                Some(v) => Some(*v),
+                None => None,
+            },
+            Element::Floating(val) => match val.value().as_value() {
+                Some(v) => Some(*v as i64),
+                None => None,
+            },
+            _ => None
+        }
+    } 
+    pub fn as_floating(&self) -> Option<f64> {
+        match self {
+            Element::Integer(val) => match val.value().as_value() {
+                Some(v) => Some(*v as f64),
+                None => None,
+            },
+            Element::Floating(val) => match val.value().as_value() {
+                Some(v) => Some(*v),
+                None => None,
+            },
+            _ => None
+        }
+    } 
+    // pub fn as_object(&self) -> Option<&ObjectType> {
+
+    // }
+}
+
 #[derive(Clone)]
 pub struct Options {
     values: HashMap<String, Element>

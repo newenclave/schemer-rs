@@ -98,6 +98,18 @@ impl<T> PossibleArray<T> where T: Clone {
             PossibleArray::Array(_) => true,
         }
     }
+    pub fn as_value(&self) -> Option<&T> {
+        match &self {
+            PossibleArray::Value(val) => Some(&val),
+            PossibleArray::Array(_) => None,
+        }
+    }
+    pub fn as_array(&self) -> Option<&Vec<T>> {
+        match &self {
+            PossibleArray::Value(_) => None,
+            PossibleArray::Array(arr) => Some(arr),
+        }
+    }
 }
 
 pub trait Numeric: Copy + 
