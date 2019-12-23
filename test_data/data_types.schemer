@@ -14,5 +14,5 @@ main: object {
 
     boolean: boolean = true
 
-    any: any = null
+    any(required): any = null
 }

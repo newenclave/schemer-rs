@@ -409,7 +409,7 @@ mod to_json_schema {
                         Some(val) => to_json_schema_impl(val, opts),
                         None => {
                             let mut obj = ObjectType::new();
-                            obj.add_field(field("type", &vec!("object", "null")));
+                            //obj.add_field(field("type", &vec!("object", "null")));
                             set_common_schema_options(&mut obj, opts);
                             value(obj)
                         },
