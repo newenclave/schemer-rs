@@ -286,6 +286,107 @@ main: object {
 }
 ```
 
+schema:
+
+```js
+{
+  "type": "object",
+  "properties": {
+    "any_object": {
+      "properties": {
+        "b": {
+          "type": "boolean"
+        },
+        "n": {},
+        "f": {
+          "type": "number"
+        },
+        "a": {
+          "type": "boolean"
+        },
+        "aa": {
+          "type": "object",
+          "properties": {
+            "some_nested": {
+              "properties": {},
+              "type": "object"
+            }
+          }
+        },
+        "data": {
+          "type": "string"
+        },
+        "i": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "any_int": {
+      "type": "integer"
+    },
+    "any_string": {
+      "type": "string"
+    },
+    "valid_any_array": {
+      "type": "array"
+    },
+    "eny_empty_array": {
+      "type": "array"
+    },
+    "any_float": {
+      "type": "number"
+    },
+    "valid_json_any": {
+      "type": "object",
+      "properties": {
+        "b": {
+          "type": "array"
+        },
+        "i": {
+          "type": "integer"
+        },
+        "data": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
+```
+
+value:
+
+```js
+{
+  "any_string": "this is an any string",
+  "any_float": 10.5,
+  "eny_empty_array": [],
+  "valid_json_any": {
+    "b": [
+      {}, 1, ""
+    ],
+    "i": 100,
+    "data": "data"
+  },
+  "valid_any_array": [
+    1, 1.5, "string", {}
+  ],
+  "any_object": {
+    "i": 1000,
+    "f": 0.5,
+    "n": null,
+    "data": "string value",
+    "b": false,
+    "aa": {
+      "some_nested": {}
+    },
+    "a": true
+  },
+  "any_int": 10
+}
+```
+
 Also i'm gonna add examples. See `test_data` directory.
 
 #### Thanks 
