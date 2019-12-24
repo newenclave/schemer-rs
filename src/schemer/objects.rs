@@ -236,6 +236,28 @@ impl ObjectType {
     pub fn clone_fields(&self) -> HashMap<String, FieldType> {
         self.fields.clone()
     }
+
+    pub fn element_by_path(&self, path: &str) -> Option<&Element> {
+        let mut last: Option<&Element> = None;
+
+        for next in path.split(|c| c == '.') {
+            if next.len() > 0 {
+                let tmp = match &last {
+                    Some(element) => match element.as_object() {
+                        Some(obj) => obj.element_by_path(next),
+                        None => None,
+                    },
+                    None => None,
+                };
+                if tmp.is_none() {
+                    return None;
+                } else {
+                    last = tmp;
+                }
+            }
+        }
+        last
+    }
 }
 
 #[derive(Clone)]
@@ -313,9 +335,27 @@ impl Element {
             _ => None
         }
     } 
-    // pub fn as_object(&self) -> Option<&ObjectType> {
-
-    // }
+    pub fn as_boolean(&self) -> Option<bool> {
+        match self {
+            Element::Boolean(val) => match val.value().as_value() {
+                Some(v) => Some(*v),
+                None => None,
+            },
+            _ => None
+        }
+    }
+    pub fn as_object(&self) -> Option<&ObjectType> {
+        match self {
+            Element::Object(val) => match val.value().as_value() {
+                Some(v) => match &**v {
+                    Some(unboxed) => Some(unboxed),
+                    None => None,
+                },
+                None => None,
+            },
+            _ => None
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -323,12 +363,13 @@ pub struct Options {
     values: HashMap<String, Element>
 }
 impl Options {
+
     pub fn new() -> Options {
         Options {
             values: HashMap::new(),
         }
     }
-    
+
     pub fn has_bool(&self, key: &str) -> bool {
         match self.values.get(key) {
             Some(expr) => match expr {

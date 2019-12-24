@@ -77,12 +77,13 @@ impl<T> Enum<T> where T: std::cmp::PartialEq + Clone {
 }
 
 #[derive(Clone)]
-pub enum PossibleArray<T: Clone> {
+pub enum PossibleArray<T> where T: Clone {
     Value(T),
     Array(Vec<T>),
 }
 
 impl<T> PossibleArray<T> where T: Clone {
+    #![allow(unused)]    
     pub fn new_array() -> Self {
         PossibleArray::Array(Vec::new())
     }
