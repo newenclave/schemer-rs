@@ -7,6 +7,7 @@ use schemer::lexer::{Lexer};
 use schemer::parser::Parser;
 use schemer::to_schemer::{field_to_string};
 use schemer::to_json::{to_json_values, to_json_schema};
+use schemer::formatting::{element_format};
 
 fn show_in_json_value(value: &FieldType) {
     println!("{}", to_json_values(value));
@@ -61,20 +62,13 @@ fn main() {
             },
         }
     } else {
-        let _v = "
-        main: object {
-            test: object {
-              test: object{
-                id: integer = 100
-              }
-            }
-        } 
+        let v = "
+        main: integer[] = [10,10,101,10] 
         ".to_owned();
 
-        // parse_format(&v, &|fld|{
-        //     let r = fld.value().as_object().unwrap().element_by_path("test.test.id").unwrap();
-        //     println!("{}", field_to_string(&FieldType::new("".to_string(), r.clone(), Options::new())));
-        // });
+        parse_format(&v, &|fld|{
+            println!("{}", element_format(fld.value(), 2));
+        });
         eprintln!("Use: schemer-rs <path_to_scheme_file>")
     }
 }

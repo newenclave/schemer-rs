@@ -3,7 +3,6 @@ use super::objects::*;
 use super::object_base::*;
 use super::helpers::*;
 
-
 mod utils {
     static SHIFT: &'static str = "  ";
     pub fn string_join<T: std::string::ToString>(vals: &Vec<T>, sep: &str) -> String {

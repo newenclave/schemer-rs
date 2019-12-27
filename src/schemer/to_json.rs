@@ -1,4 +1,3 @@
-#![allow(unused)]
 
 use super::objects::*;
 use super::object_base::*;
@@ -16,9 +15,6 @@ mod utils {
         SHIFT.repeat(shift)
     }
 
-    pub fn sh_str(shift: usize, value: &str) -> String {
-        format!("{}{}", sh(shift), value)
-    }
 }
 
 mod to_json_value {
@@ -30,7 +26,7 @@ mod to_json_value {
     }
 
     impl ValuesToJson for BooleanType {
-        fn value_to_json(&self, shift: usize) -> String {
+        fn value_to_json(&self, _: usize) -> String {
             match self.value() {
                 PossibleArray::Value(val) => { val.to_string() },
                 PossibleArray::Array(val) => {
@@ -43,7 +39,7 @@ mod to_json_value {
     }
 
     impl<T> ValuesToJson for NumberType<T> where T: Numeric {
-        fn value_to_json(&self, shift: usize) -> String {
+        fn value_to_json(&self, _: usize) -> String {
             match self.value() {
                 PossibleArray::Value(val) => { val.to_string() },
                 PossibleArray::Array(val) => {
@@ -56,7 +52,7 @@ mod to_json_value {
     }
 
     impl ValuesToJson for StringType {
-        fn value_to_json(&self, shift: usize) -> String {
+        fn value_to_json(&self, _: usize) -> String {
             match self.value() {
                 PossibleArray::Value(val) => { format!("\"{}\"", val.to_string()) },
                 PossibleArray::Array(val) => {
@@ -415,7 +411,7 @@ mod to_json_schema {
                         },
                     }
                 }
-                PossibleArray::Array(arr) => {
+                PossibleArray::Array(_) => {
                     let mut obj = ObjectType::new();
                     set_common_schema_options(&mut obj, opts);
                     obj.add_field(field("type", "array"));
