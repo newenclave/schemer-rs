@@ -21,9 +21,13 @@ impl Formatting {
         self.shift.repeat(shift)
     }
 
+    fn nl_sh(&self, shift: usize) -> String {
+        format!(",{}{}", self.new_line, self.sh(shift))
+    }
+
     fn format_array(&self, arr: &Vec<String>, shift: usize) -> String {
         format!("{}{}{}{}{}", self.new_line, self.sh(shift + 1), 
-            arr.join(&format!(",{}{}", self.new_line, self.sh(shift + 1))), 
+            arr.join(&self.nl_sh(shift + 1)), 
             self.new_line, self.sh(shift))
     }
 }
