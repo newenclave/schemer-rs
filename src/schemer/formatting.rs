@@ -78,7 +78,7 @@ fn object_format(obj: &ObjectType, shift: usize, start_shift: usize) -> String {
                 },
                 None => obj.fields(),
             }.iter().map(|(k, v)| {
-                format!("\"{}\": {}", k, element_format(v.value(), shift, start_shift + 1))
+                format!("\"{}\": {}", k, element_format_impl(v.value(), shift, start_shift + 1))
             }).collect::<Vec<String>>();
             if str_value.len() == 0 {
                 "{}".to_string()
@@ -111,7 +111,7 @@ fn any_format(any: &AnyType, shift: usize, start_shift: usize) -> String {
             let str_values = (**arr)
             .iter().map(|x| {
                 match &**x {
-                    Some(field) => element_format(field, shift, start_shift + 1),
+                    Some(field) => element_format_impl(field, shift, start_shift + 1),
                     None => "null".to_string(),
                 }
             }).collect::<Vec<String>>();
@@ -124,7 +124,7 @@ fn any_format(any: &AnyType, shift: usize, start_shift: usize) -> String {
         PossibleArray::Value(val) => {
             match &**val {
                 Some(unboxed) => {
-                    element_format(unboxed, shift, start_shift + 1)
+                    element_format_impl(unboxed, shift, start_shift + 1)
                 },
                 None => "null".to_string(),
             }
@@ -133,7 +133,7 @@ fn any_format(any: &AnyType, shift: usize, start_shift: usize) -> String {
 }
 
 
-pub fn element_format(element: &Element, shift: usize, start_shift: usize) -> String {
+fn element_format_impl(element: &Element, shift: usize, start_shift: usize) -> String {
     match element {
         Element::Boolean(v) => { value_format(v.value(), shift, start_shift) },
         Element::String(v) => { value_format(v.value(), shift, start_shift) },
@@ -143,4 +143,8 @@ pub fn element_format(element: &Element, shift: usize, start_shift: usize) -> St
         Element::Any(v) => { any_format(v, shift, start_shift) },
         Element::None => "".to_string(),
     }
+}
+
+pub fn element_format(element: &Element, shift: usize) -> String {
+    element_format_impl(element, shift, 0)
 }

@@ -75,7 +75,7 @@ fn main() {
         ".to_owned();
 
         parse_format(&v, &|fld|{
-            println!("{}", element_format(fld.value(), 2, 0));
+            println!("{}", element_format(fld.value(), 2));
         });
         eprintln!("Use: schemer-rs <path_to_scheme_file>")
     }
