@@ -63,11 +63,19 @@ fn main() {
         }
     } else {
         let v = "
-        main: integer[] = [10,10,101,10] 
+        main: object {
+          i: integer = 10,
+          b: boolean = false,
+          f: floating = 0.5,
+          s: string[] = [\"\", \"\", \"\"]
+          o: object[] { a: integer } = [{}, {}, {}], 
+          a1 : any = { i: 100, b: true },
+          a2 : any = [{i: 100}, {b: [true, false]}]
+        } 
         ".to_owned();
 
         parse_format(&v, &|fld|{
-            println!("{}", element_format(fld.value(), 2));
+            println!("{}", element_format(fld.value(), 2, 0));
         });
         eprintln!("Use: schemer-rs <path_to_scheme_file>")
     }

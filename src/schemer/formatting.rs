@@ -22,8 +22,9 @@ impl Formatting {
     }
 
     fn format_array(&self, arr: &Vec<String>, shift: usize) -> String {
-        format!("[{}{}{}{}{}]", self.new_line, self.sh(shift + 1), 
-            arr.join(", "), self.sh(shift), self.new_line)
+        format!("{}{}{}{}{}", self.new_line, self.sh(shift + 1), 
+            arr.join(&format!(",{}{}", self.new_line, self.sh(shift + 1))), 
+            self.new_line, self.sh(shift))
     }
 }
 
@@ -55,60 +56,91 @@ impl ValueToString for String {
     }
 }
 
-fn value_format<T: Clone + ValueToString>(value: &PossibleArray<T>, shift: usize) -> String {
+fn value_format<T: Clone + ValueToString>(value: &PossibleArray<T>, shift: usize, start_shift: usize) -> String {
     let format = Formatting::new(shift);
     match value {
         PossibleArray::Value(val) => { (val as &dyn ValueToString).convert() },
         PossibleArray::Array(arr) => {
-            format.format_array(&arr.iter().map(|v| (v as &dyn ValueToString).convert()).collect::<Vec<String>>(), 0)
+            format!("[{}]",
+                format.format_array(&arr.iter().map(|v| (v as &dyn ValueToString).convert()).collect::<Vec<String>>(), start_shift)
+            )
         },
     }
 }
 
-// fn object_format(obj: &ObjectType, shift: usize) {
-//     let format = Formatting::new(shift);
-//     match obj {
-//         PossibleArray::Value(val) => {
-//             let str_value = match &**val {
-//                 Some(unboxed) => {
-//                     unboxed.fields()
-//                 },
-//                 None => obj.fields(),
-//             }.iter().map(|(k, v)| {
-//                 to_json_values_impl(k, v.value(), shift + 1)
-//             }).collect::<Vec<String>>().join(",\n");
-//             if str_value.len() == 0 {
-//                 "{}".to_string()
-//             } else {
-//                 format!("{{\n{}\n{}}}", &str_value, utils::sh(shift))
-//             }
-//         },
-//         PossibleArray::Array(arr) => {
-//             let values = (**arr)
-//             .iter().map(|x| {
-//                 match &**x {
-//                     Some(field) => field.value_to_json(shift + 1),
-//                     None => String::new(),
-//                 }
-//             }).collect::<Vec<String>>().join(", ");
-//             if values.len() == 0 {
-//                 "[]".to_string()
-//             } else {
-//                 format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
-//             }
-//         },
-//     }
-// }
-
-pub fn element_format(element: &Element, shift: usize) -> String {
-    match element {
-        Element::Boolean(v) => { value_format(v.value(), shift) },
-        Element::String(v) => { value_format(v.value(), shift) },
-        Element::Integer(v) => { value_format(v.value(), shift) },
-        Element::Floating(v) => { value_format(v.value(), shift) },
-        // Element::Object(v) => { call_value_to_json(v, shift) },
-        // Element::Any(v) => { call_value_to_json(v, shift) },
-        // Element::None => "".to_string(),
+fn object_format(obj: &ObjectType, shift: usize, start_shift: usize) -> String {
+    let format = Formatting::new(shift);
+    match obj.value() {
+        PossibleArray::Value(val) => {
+            let str_value = match &**val {
+                Some(unboxed) => {
+                    unboxed.fields()
+                },
+                None => obj.fields(),
+            }.iter().map(|(k, v)| {
+                format!("\"{}\": {}", k, element_format(v.value(), shift, start_shift + 1))
+            }).collect::<Vec<String>>();
+            if str_value.len() == 0 {
+                "{}".to_string()
+            } else {
+                format!("{{{}}}", format.format_array(&str_value, start_shift))
+            }
+        },
+        PossibleArray::Array(arr) => {
+            let str_value = (**arr)
+            .iter().map(|x| {
+                match &**x {
+                    Some(field) => object_format(field, shift, start_shift + 1),
+                    None => String::new(),
+                }
+            }).collect::<Vec<String>>();
+            if str_value.len() == 0 {
+                "[]".to_string()
+            } else {
+                format!("[{}]", format.format_array(&str_value, start_shift))
+            }
+        },
         _ => String::new()
+    }
+}
+
+fn any_format(any: &AnyType, shift: usize, start_shift: usize) -> String {
+    let format = Formatting::new(shift);
+    match any.value() {
+        PossibleArray::Array(arr) => {
+            let str_values = (**arr)
+            .iter().map(|x| {
+                match &**x {
+                    Some(field) => element_format(field, shift, start_shift + 1),
+                    None => "null".to_string(),
+                }
+            }).collect::<Vec<String>>();
+            if str_values.len() == 0 {
+                "[]".to_string()
+            } else {
+                format!("[{}]", format.format_array(&str_values, start_shift))
+            }
+        },
+        PossibleArray::Value(val) => {
+            match &**val {
+                Some(unboxed) => {
+                    element_format(unboxed, shift, start_shift + 1)
+                },
+                None => "null".to_string(),
+            }
+        },
+    }
+}
+
+
+pub fn element_format(element: &Element, shift: usize, start_shift: usize) -> String {
+    match element {
+        Element::Boolean(v) => { value_format(v.value(), shift, start_shift) },
+        Element::String(v) => { value_format(v.value(), shift, start_shift) },
+        Element::Integer(v) => { value_format(v.value(), shift, start_shift) },
+        Element::Floating(v) => { value_format(v.value(), shift, start_shift) },
+        Element::Object(v) => { object_format(v, shift, start_shift) },
+        Element::Any(v) => { any_format(v, shift, start_shift) },
+        Element::None => "".to_string(),
     }
 }
