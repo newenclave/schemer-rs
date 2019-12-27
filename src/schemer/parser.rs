@@ -494,8 +494,7 @@ impl Parser {
 
         result = self.parse_begin(result)?;
 
-        while self.try_read_interval(&mut result)? 
-            && self.try_read_enum(&mut result)?{ }
+        while self.try_read_interval(&mut result)? || self.try_read_enum(&mut result)?{ }
 
         self.read_value(&mut result)?;
         return Ok(result);

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::env;
 use std::fs;
 mod schemer;
-use schemer::objects::{FieldType, Options};
+use schemer::objects::{FieldType};
 use schemer::lexer::{Lexer};
 use schemer::parser::Parser;
 use schemer::to_schemer::{field_to_string};
@@ -61,7 +61,7 @@ fn main() {
             },
         }
     } else {
-        let v = "
+        let _v = "
         main: object {
             test: object {
               test: object{
@@ -71,10 +71,10 @@ fn main() {
         } 
         ".to_owned();
 
-        parse_format(&v, &|fld|{
-            let r = fld.value().as_object().unwrap().element_by_path("test.test.id").unwrap();
-            println!("{}", field_to_string(&FieldType::new("".to_string(), r.clone(), Options::new())));
-        });
+        // parse_format(&v, &|fld|{
+        //     let r = fld.value().as_object().unwrap().element_by_path("test.test.id").unwrap();
+        //     println!("{}", field_to_string(&FieldType::new("".to_string(), r.clone(), Options::new())));
+        // });
         eprintln!("Use: schemer-rs <path_to_scheme_file>")
     }
 }

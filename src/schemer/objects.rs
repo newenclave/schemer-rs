@@ -236,28 +236,6 @@ impl ObjectType {
     pub fn clone_fields(&self) -> HashMap<String, FieldType> {
         self.fields.clone()
     }
-
-    pub fn element_by_path(&self, path: &str) -> Option<&Element> {
-        let mut last: Option<&Element> = None;
-
-        for next in path.split(|c| c == '.') {
-            if next.len() > 0 {
-                let tmp = match &last {
-                    Some(element) => match element.as_object() {
-                        Some(obj) => obj.element_by_path(next),
-                        None => None,
-                    },
-                    None => None,
-                };
-                if tmp.is_none() {
-                    return None;
-                } else {
-                    last = tmp;
-                }
-            }
-        }
-        last
-    }
 }
 
 #[derive(Clone)]

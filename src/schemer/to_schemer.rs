@@ -56,11 +56,11 @@ impl ToSchemerString for StringType {
         let opt_enum = self.enum_values();
         let enum_string = match &opt_enum {
             Some(values) => {
-                format!(" enum {{\"{}\"}}",
+                format!(" enum {{{}}}",
                     values.values()
                         .iter().map(|x| {
-                            x.to_string()
-                        }).collect::<Vec<String>>().join("\", \"")
+                            format!("\"{}\"", x)
+                        }).collect::<Vec<String>>().join(", ")
                 )
             },
             None => String::new(),
