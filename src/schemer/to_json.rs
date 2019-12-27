@@ -34,9 +34,9 @@ mod to_json_value {
             match self.value() {
                 PossibleArray::Value(val) => { val.to_string() },
                 PossibleArray::Array(val) => {
-                    utils::sh_str(shift, &format!("[{}]",
+                    format!("[{}]",
                         &utils::string_join(&val.iter().map(|v| v.to_string()).collect::<Vec<String>>(), ", ")
-                    ))
+                    )
                 },
             }
         }
