@@ -2,160 +2,8 @@
 use super::objects::*;
 use super::object_base::*;
 use super::helpers::*;
+use super::formatting::{element_format};
 
-// TODO: remove copy-paste
-mod utils { 
-    static SHIFT: &'static str = "  ";
-    pub fn string_join<T: std::string::ToString>(vals: &Vec<T>, sep: &str) -> String {
-        vals.iter().map(|v|{
-            v.to_string()
-        }).collect::<Vec<String>>().join(sep)
-    }
-    pub fn sh(shift: usize) -> String {
-        SHIFT.repeat(shift)
-    }
-
-}
-
-mod to_json_value {
-    use super::*;
-    // TODO: looks like copy-paste from to_schemer. 
-    //  Need to provide some trait with plain string but with no format
-    pub trait ValuesToJson {
-        fn value_to_json(&self, shift: usize) -> String;
-    }
-
-    impl ValuesToJson for BooleanType {
-        fn value_to_json(&self, _: usize) -> String {
-            match self.value() {
-                PossibleArray::Value(val) => { val.to_string() },
-                PossibleArray::Array(val) => {
-                    format!("[{}]",
-                        &utils::string_join(&val.iter().map(|v| v.to_string()).collect::<Vec<String>>(), ", ")
-                    )
-                },
-            }
-        }
-    }
-
-    impl<T> ValuesToJson for NumberType<T> where T: Numeric {
-        fn value_to_json(&self, _: usize) -> String {
-            match self.value() {
-                PossibleArray::Value(val) => { val.to_string() },
-                PossibleArray::Array(val) => {
-                    format!("[{}]",
-                        &utils::string_join(&val.iter().map(|v| v.to_string()).collect::<Vec<String>>(), ", ")
-                    )
-                },
-            }
-        }
-    }
-
-    impl ValuesToJson for StringType {
-        fn value_to_json(&self, _: usize) -> String {
-            match self.value() {
-                PossibleArray::Value(val) => { format!("\"{}\"", val.to_string()) },
-                PossibleArray::Array(val) => {
-                    format!("[{}]",
-                        &utils::string_join(&val.iter()
-                            .map(|v| {
-                                format!("\"{}\"", v.to_string())
-                            }).collect::<Vec<String>>(), ", ")
-                    )
-                },
-            }
-        }
-    }
-
-    impl ValuesToJson for ObjectType {
-        fn value_to_json(&self, shift: usize) -> String {
-            match self.value() {
-                PossibleArray::Value(val) => {
-                    let str_value = match &**val {
-                        Some(unboxed) => {
-                            unboxed.fields()
-                        },
-                        None => self.fields(),
-                    }.iter().map(|(k, v)| {
-                        to_json_values_impl(k, v.value(), shift + 1)
-                    }).collect::<Vec<String>>().join(",\n");
-                    if str_value.len() == 0 {
-                        "{}".to_string()
-                    } else {
-                        format!("{{\n{}\n{}}}", &str_value, utils::sh(shift))
-                    }
-                },
-                PossibleArray::Array(arr) => {
-                    let values = (**arr)
-                    .iter().map(|x| {
-                        match &**x {
-                            Some(field) => field.value_to_json(shift + 1),
-                            None => String::new(),
-                        }
-                    }).collect::<Vec<String>>().join(", ");
-                    if values.len() == 0 {
-                        "[]".to_string()
-                    } else {
-                        format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
-                    }
-                },
-            }
-        }
-    }
-
-    impl ValuesToJson for AnyType {
-        fn value_to_json(&self, shift: usize) -> String {
-            match self.value() {
-                PossibleArray::Array(arr) => {
-                    let values = (**arr)
-                    .iter().map(|x| {
-                        match &**x {
-                            Some(field) => element_to_json_values_impl(field, shift + 1),
-                            None => "null".to_string(),
-                        }
-                    }).collect::<Vec<String>>().join(", ");
-                    if values.len() == 0 {
-                        "[]".to_string()
-                    } else {
-                        format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
-                    }
-                },
-                PossibleArray::Value(val) => {
-                    match &**val {
-                        Some(unboxed) => {
-                            element_to_json_values_impl(unboxed, shift)
-                        },
-                        None => "null".to_string(),
-                    }
-                },
-            }
-        }
-    }
-
-    /// To value
-    fn call_value_to_json<T: to_json_value::ValuesToJson + ObjectBase>(val: &T, shift: usize) -> String {
-        val.value_to_json(shift)
-    }
-
-    pub fn element_to_json_values_impl(val: &Element, shift: usize) -> String {
-        match val {
-            Element::Boolean(v) => { call_value_to_json(v, shift) },
-            Element::String(v) => { call_value_to_json(v, shift) },
-            Element::Integer(v) => { call_value_to_json(v, shift) },
-            Element::Floating(v) => { call_value_to_json(v, shift) },
-            Element::Object(v) => { call_value_to_json(v, shift) },
-            Element::Any(v) => { call_value_to_json(v, shift) },
-            Element::None => "".to_string(),
-        }
-    }
-
-    fn to_json_values_impl(name: &str, val: &Element, shift: usize) -> String {
-        format!("{}\"{}\": {}", utils::sh(shift), 
-            name,
-            element_to_json_values_impl(val, shift)
-        )
-    }
-}
 
 mod to_json_schema {
     use super::*;
@@ -427,8 +275,7 @@ mod to_json_schema {
 }
 
 pub fn to_json_values(val: &FieldType) -> String {
-    to_json_value::element_to_json_values_impl(val.value(), 0)
-    //to_json_values_impl(val.name(), val.value(), 0)
+    element_format(val.value(), 2)
 }
 
 pub fn to_json_schema(val: &FieldType) -> String {
@@ -443,6 +290,5 @@ pub fn to_json_schema(val: &FieldType) -> String {
         //Element::None => "".to_string(),
         _ => Element::None,
     };
-    to_json_value::element_to_json_values_impl(&schema_obj, 0)
-    //to_json_values_impl(val.name(), &schema_obj, 0)
+    element_format(&schema_obj, 2)
 }
