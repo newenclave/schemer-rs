@@ -5,12 +5,6 @@ use super::helpers::*;
 use super::formatting::*;
 
 mod utils {
-    pub fn values_strings<T: std::string::ToString, F: Fn(&T) -> String>(vals: &Vec<T>, call: &F) -> Vec<String> {
-        vals.iter().map(|v|{
-            call(v)
-        }).collect::<Vec<String>>()
-    }
-
     pub fn is_ident_string(val: &str) -> bool {
         val.chars().find(|c| {
             !(c.is_ascii_alphabetic() || c.is_digit(10) || *c == '_') 
@@ -74,13 +68,13 @@ impl ToSchemerString for StringType {
     }
 }
 
-impl<T> ToSchemerString for NumberType<T> where T: Numeric, T: Clone, T: format::ValueToString {
+impl<T> ToSchemerString for NumberType<T> where T: Numeric + Clone + format::ValueToString {
     fn field_to(&self, format: &Formatting, shift: usize) -> String {
         let ival = self.interval();
         let interval = if ival.has_minmax() { 
             format!(" {}..{}", 
-                if ival.has_min() { ival.min(T::zero()).to_string() } else { "".to_string() }, 
-                if ival.has_min() { ival.max(T::zero()).to_string() } else { "".to_string() } )
+                if ival.has_min() { format.format_value(&ival.min(T::zero())) } else { String::new() }, 
+                if ival.has_min() { format.format_value(&ival.max(T::zero())) } else { String::new() } )
         } else {
             String::new()
         };
@@ -102,7 +96,7 @@ impl<T> ToSchemerString for NumberType<T> where T: Numeric, T: Clone, T: format:
     fn value_to(&self, format: &Formatting, shift: usize) -> String {
         match self.value() {
             PossibleArray::Array(arr) => {
-                format!("[{}]", format.format_t_array(&utils::values_strings(arr, &|v| v.to_string() ), shift + 1))
+                format!("[{}]", format.format_t_array(arr, shift + 1))
             },
             PossibleArray::Value(val) => {
                 val.to_string()
