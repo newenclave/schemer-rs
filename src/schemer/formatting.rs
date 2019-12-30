@@ -21,8 +21,12 @@ impl Formatting {
         self.shift.repeat(shift)
     }
 
+    pub fn nl(&self) -> &str {
+        self.new_line
+    }
+
     fn nl_sh(&self, shift: usize) -> String {
-        format!(",{}{}", self.new_line, self.sh(shift))
+        format!(",{}{}", self.nl(), self.sh(shift))
     }
 
     pub fn format_array(&self, arr: &Vec<String>, shift: usize) -> String {
@@ -161,4 +165,20 @@ pub mod format {
 pub fn element_format(element: &Element, shift: usize) -> String {
     let format = Formatting::new(shift);
     format::element_format_impl(element, &format, 0)
+}
+
+pub fn array_format(module: &Vec<FieldType>, shift: usize) -> String {
+    let format = Formatting::new(shift);
+    let elements = module.iter().map(|v| {
+        format!("\"{}\": {}", v.name(), format::element_format_impl(v.value(), &format, 1))
+    }).collect::<Vec<String>>();
+    format!("{{{}}}", format.format_array(&elements, 0))
+}
+
+pub fn ref_array_format(module: &Vec<&FieldType>, shift: usize) -> String {
+    let format = Formatting::new(shift);
+    let elements = module.iter().map(|v| {
+        format!("\"{}\": {}", v.name(), format::element_format_impl(v.value(), &format, 1))
+    }).collect::<Vec<String>>();
+    format!("{{{}}}", format.format_array(&elements, 0))
 }

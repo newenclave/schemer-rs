@@ -187,6 +187,7 @@ impl Lexer {
 
         lex.add_special("=", SpecialToken::Equal);
         lex.add_special(",", SpecialToken::Comma);
+        lex.add_special(".", SpecialToken::Dot);
         lex.add_special("..", SpecialToken::Interval);
         lex.add_special(":", SpecialToken::Colon);
         lex.add_special(";", SpecialToken::Semicolon);
@@ -199,6 +200,9 @@ impl Lexer {
 
         lex.add_special("enum", SpecialToken::Enum);
         lex.add_special("null", SpecialToken::Null);
+
+        lex.add_special("mod", SpecialToken::Mod);
+        lex.add_special("alias", SpecialToken::Alias);
 
         lex.add_type("string", TypeName::TypeString);
         lex.add_type("integer", TypeName::TypeInteger);

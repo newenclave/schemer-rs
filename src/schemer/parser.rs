@@ -298,9 +298,11 @@ mod helpers {
                                 next.add_field(FieldType::new(field_name, Element::Object(val), opts));
                             },
                             Element::Any(_) => { 
-                                parser.advance();
-                                let val = parser.guess_element()?;
-                                next.add_field(FieldType::new(field_name, val, opts));
+                                if parser.expect(&Token::is_special(SpecialToken::Equal)) || 
+                                parser.expect(&Token::is_special(SpecialToken::Colon)) {
+                                    let val = parser.guess_element()?;
+                                    next.add_field(FieldType::new(field_name, val, opts));
+                                }
                             },
                         }
                     },
@@ -679,5 +681,44 @@ impl Parser {
             _ => { return Err(self.panic_current("should be a typename")); }
         };
         Ok(FieldType::new(name, element, opts))
+    }
+
+    fn read_path(&mut self) -> Result<Vec<String>, ParserError> {
+        let (found, name) = self.read_name();
+        let mut res = Vec::new();
+        if found {
+            res.push(name); 
+            while self.expect(&Token::is_special(SpecialToken::Dot)) {
+                let (found, name) = self.read_name();
+                if found {
+                    res.push(name);
+                } else {
+                    return Err(self.panic_expect("valid name"))
+                }
+            }
+        }
+        return Ok(res);
+    }
+
+    pub fn parse_module(&mut self) -> Result<Module, ParserError> {
+        let mut res = Module::new();
+        if self.expect(&Token::is_special(SpecialToken::Mod)) {
+            let name = self.read_path()?;
+            res.set_name(name.join("."));
+        }
+
+        while !self.eof() {
+            match self.next().token() {
+                Token::Ident(_) 
+                | Token::String(_) => {
+                    let fld = self.parse_field()?;
+                    res.add_field(fld);
+                },
+                Token::Eof => break,
+                _ => return Err(self.panic_expect("name, alias")),
+            }
+        }
+
+        return Ok(res);
     }
 }

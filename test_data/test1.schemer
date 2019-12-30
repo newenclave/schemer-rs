@@ -3,3 +3,8 @@ main(readonly, random = 42): object[] {
         i: integer = 42
     }
 }
+main2: object {
+    i: integer = 100
+}
+
+enabled(required, readonly): boolean = false

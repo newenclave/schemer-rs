@@ -394,3 +394,38 @@ impl FieldType {
         &self.opts
     }
 }
+
+#[derive(Clone)]
+pub struct Module {
+    name: String,
+    fields: Vec<FieldType>,
+}
+
+impl Module {
+    #![allow(unused)]
+    pub fn new() -> Module {
+        Module {
+            name: String::new(),
+            fields: Vec::new(),
+        }
+    }
+    pub fn set_name(&mut self, name: String) {
+        self.name = name;
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn add_field(&mut self, fld: FieldType) {
+        self.fields.push(fld);
+    }
+
+    pub fn fields(&self) -> &Vec<FieldType> {
+        &self.fields
+    }
+
+    pub fn get_field(&self, name: &str) -> Option<&FieldType> {
+        self.fields.iter().find(|v| v.name() == name)
+    }
+}

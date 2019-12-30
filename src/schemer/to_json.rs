@@ -2,7 +2,7 @@
 use super::objects::*;
 use super::object_base::*;
 use super::helpers::*;
-use super::formatting::{element_format};
+use super::formatting::{array_format, element_format};
 
 
 mod to_json_schema {
@@ -274,11 +274,23 @@ mod to_json_schema {
     }
 }
 
-pub fn to_json_values(val: &FieldType, shift: usize) -> String {
+pub fn to_json_values(val: &Module, shift: usize) -> String {
+    array_format(val.fields(), shift)
+}
+
+pub fn to_json_schema(val: &Module, shift: usize) -> String {
+    let mut obj_arrays = ObjectType::new();
+    for f in val.fields() {
+        obj_arrays.add_field(f.clone())
+    }
+    element_format(&to_json_schema::to_json_schema_impl(&obj_arrays, &Options::new()), shift)
+}
+
+fn _field_to_json_values(val: &FieldType, shift: usize) -> String {
     element_format(val.value(), shift)
 }
 
-pub fn to_json_schema(val: &FieldType, shift: usize) -> String {
+fn _field_to_json_schema(val: &FieldType, shift: usize) -> String {
     use to_json_schema::to_json_schema_impl as call_impl;
     let schema_obj = match val.value() {
         Element::Boolean(v) => { call_impl(v, val.options()) },

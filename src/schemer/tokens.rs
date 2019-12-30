@@ -14,6 +14,7 @@ pub enum SpecialToken {
     Comma, // ,
     Colon, // :
     Semicolon, // ;
+    Dot, // .
 
     Minus, // -
     Plus, // +
@@ -25,6 +26,9 @@ pub enum SpecialToken {
     HexBegin, // 0x, 0X
 
     Interval, // ..
+
+    Mod, // mod
+    Alias, // 
 }
 
 #[derive(Clone, PartialEq)]
@@ -169,6 +173,7 @@ impl TokenInfo {
                 SpecialToken::RBracket => "]".to_string(),
                 SpecialToken::Equal => "=".to_string(),
                 SpecialToken::Comma => ",".to_string(),
+                SpecialToken::Dot => ".".to_string(),
                 SpecialToken::Colon => ":".to_string(),
                 SpecialToken::Semicolon => ";".to_string(),
                 SpecialToken::Interval => "..".to_string(),
@@ -178,6 +183,8 @@ impl TokenInfo {
                 SpecialToken::HexBegin => "0x".to_string(),
                 SpecialToken::Enum => "enum".to_string(),
                 SpecialToken::Null => "null".to_string(),
+                SpecialToken::Mod => "mod".to_string(),
+                SpecialToken::Alias => "alias".to_string(),
             },
             Token::Eof => "eof".to_string(),
         }

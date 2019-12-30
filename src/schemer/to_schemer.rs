@@ -240,7 +240,21 @@ fn values_to_string(val: &FieldType, format: &Formatting, shift: usize) -> Strin
     )
 }
 
-pub fn field_to_string(val: &FieldType, shift: usize) -> String {
+// pub fn field_to_string(val: &FieldType, shift: usize) -> String {
+//     let format = Formatting::new(shift);
+//     field_to_string_impl(val, &format, 0)
+// }
+
+pub fn module_to_string(val: &Module, shift: usize) -> String {
     let format = Formatting::new(shift);
-    field_to_string_impl(val, &format, 0)
+    let mut res = String::new();
+    if val.name().len() > 0 {
+        res = val.name().to_string();
+        res.push_str("\n");
+    }
+    for v in val.fields() {
+        res.push_str(&field_to_string_impl(v, &format, 0));
+        res.push_str("\n");
+    } 
+    return res;
 }
