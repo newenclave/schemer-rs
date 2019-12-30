@@ -62,7 +62,7 @@ impl ToSchemerString for StringType {
                 format!("[{}]", format.format_t_array(&arr, shift + 1))
             },
             PossibleArray::Value(val) => {
-                format!("\"{}\"", val)
+                format.format_value(val)
             },
         }
     }
@@ -240,7 +240,7 @@ fn values_to_string(val: &FieldType, format: &Formatting, shift: usize) -> Strin
     )
 }
 
-pub fn field_to_string(val: &FieldType) -> String {
-    let format = Formatting::new(2);
+pub fn field_to_string(val: &FieldType, shift: usize) -> String {
+    let format = Formatting::new(shift);
     field_to_string_impl(val, &format, 0)
 }

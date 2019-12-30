@@ -274,11 +274,11 @@ mod to_json_schema {
     }
 }
 
-pub fn to_json_values(val: &FieldType) -> String {
-    element_format(val.value(), 2)
+pub fn to_json_values(val: &FieldType, shift: usize) -> String {
+    element_format(val.value(), shift)
 }
 
-pub fn to_json_schema(val: &FieldType) -> String {
+pub fn to_json_schema(val: &FieldType, shift: usize) -> String {
     use to_json_schema::to_json_schema_impl as call_impl;
     let schema_obj = match val.value() {
         Element::Boolean(v) => { call_impl(v, val.options()) },
@@ -290,5 +290,5 @@ pub fn to_json_schema(val: &FieldType) -> String {
         //Element::None => "".to_string(),
         _ => Element::None,
     };
-    element_format(&schema_obj, 2)
+    element_format(&schema_obj, shift)
 }

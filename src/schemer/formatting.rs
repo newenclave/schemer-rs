@@ -112,7 +112,7 @@ pub mod format {
                 let str_value = (**arr)
                 .iter().map(|x| {
                     match &**x {
-                        Some(field) => object_format(field, format, shift + 1),
+                        Some(field) => object_format(field, format, shift),
                         None => String::new(),
                     }
                 }).collect::<Vec<String>>();
@@ -137,7 +137,7 @@ pub mod format {
             PossibleArray::Value(val) => {
                 match &**val {
                     Some(unboxed) => {
-                        element_format_impl(unboxed, format, shift + 1)
+                        element_format_impl(unboxed, format, shift)
                     },
                     None => "null".to_string(),
                 }
