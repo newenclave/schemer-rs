@@ -26,12 +26,25 @@ impl Formatting {
     }
 
     pub fn format_array(&self, arr: &Vec<String>, shift: usize) -> String {
-        format!("{}{}{}{}{}", self.new_line, self.sh(shift + 1), 
+        if arr.len() > 0 {
+            format!("{}{}{}{}{}", self.new_line, self.sh(shift + 1), 
             arr.join(&self.nl_sh(shift + 1)), 
             self.new_line, self.sh(shift))
+        } else {
+            String::new()
+        }
+    }
+
+    pub fn format_t_array<T: format::ValueToString>(&self, arr: &Vec<T>, shift: usize) -> String {
+        self.format_array(&arr.iter().map(|v| v.convert()).collect::<Vec<String>>(), shift)
+    }
+
+    pub fn format_value<T: format::ValueToString>(&self, val: &T) -> String {
+        val.convert()
     }
 }
-mod format {
+
+pub mod format {
 
     use super::{
         Formatting,
@@ -41,7 +54,7 @@ mod format {
         Element
     };
 
-    trait ValueToString {
+    pub trait ValueToString {
         fn convert(&self) -> String;
     }
 
@@ -74,7 +87,9 @@ mod format {
             PossibleArray::Value(val) => { (val as &dyn ValueToString).convert() },
             PossibleArray::Array(arr) => {
                 format!("[{}]",
-                    format.format_array(&arr.iter().map(|v| (v as &dyn ValueToString).convert()).collect::<Vec<String>>(), shift)
+                    format.format_array(&arr.iter().map(|v| {
+                        (v as &dyn ValueToString).convert()
+                    }).collect::<Vec<String>>(), shift)
                 )
             },
         }
@@ -91,11 +106,7 @@ mod format {
                 }.iter().map(|(k, v)| {
                     format!("\"{}\": {}", k, element_format_impl(v.value(), format, shift + 1))
                 }).collect::<Vec<String>>();
-                if str_value.len() == 0 {
-                    "{}".to_string()
-                } else {
-                    format!("{{{}}}", format.format_array(&str_value, shift))
-                }
+                format!("{{{}}}", format.format_array(&str_value, shift))
             },
             PossibleArray::Array(arr) => {
                 let str_value = (**arr)
@@ -105,11 +116,7 @@ mod format {
                         None => String::new(),
                     }
                 }).collect::<Vec<String>>();
-                if str_value.len() == 0 {
-                    "[]".to_string()
-                } else {
-                    format!("[{}]", format.format_array(&str_value, shift))
-                }
+                format!("[{}]", format.format_array(&str_value, shift))
             },
             _ => String::new()
         }
@@ -125,11 +132,7 @@ mod format {
                         None => "null".to_string(),
                     }
                 }).collect::<Vec<String>>();
-                if str_values.len() == 0 {
-                    "[]".to_string()
-                } else {
-                    format!("[{}]", format.format_array(&str_values, shift))
-                }
+                format!("[{}]", format.format_array(&str_values, shift))
             },
             PossibleArray::Value(val) => {
                 match &**val {
@@ -141,7 +144,6 @@ mod format {
             },
         }
     }
-
 
     pub fn element_format_impl(element: &Element, format: &Formatting, shift: usize) -> String {
         match element {

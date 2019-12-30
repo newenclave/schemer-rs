@@ -7,7 +7,6 @@ use schemer::lexer::{Lexer};
 use schemer::parser::Parser;
 use schemer::to_schemer::{field_to_string};
 use schemer::to_json::{to_json_values, to_json_schema};
-use schemer::formatting::{element_format};
 
 fn show_in_json_value(value: &FieldType) {
     println!("{}", to_json_values(value));
@@ -63,20 +62,13 @@ fn main() {
         }
     } else {
         let v = "
-        main: object {
-          i: integer = 10,
-          b: boolean = false,
-          f: floating = 0.5,
-          s: string[] = [\"\", \"\", \"\"]
-          o: object[] { a: integer } = [{}, {}, {}], 
-          a1 : any = { i: 100, b: true },
-          a2 : any = [{i: 100}, {b: [true, false]}]
-        } 
+        main: object {s: string enum {\"one\",\"two\",\"three\"} = \"one\",i: integer enum {1,3,5,7,9} = 3,f: floating enum {0.5,1,1.5} = 0.5}
         ".to_owned();
 
-        parse_format(&v, &|fld|{
-            println!("{}", element_format(fld.value(), 2));
-        });
-        eprintln!("Use: schemer-rs <path_to_scheme_file>")
+      parse_format(&v, &show_in_schemer);
+      // parse_format(&v, &|fld|{
+      //     println!("{}", element_format(fld.value(), 2));
+      // });
+      eprintln!("Use: schemer-rs <path_to_scheme_file>")
     }
 }

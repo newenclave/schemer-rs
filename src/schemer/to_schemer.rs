@@ -2,17 +2,15 @@
 use super::objects::*;
 use super::object_base::*;
 use super::helpers::*;
+use super::formatting::*;
 
 mod utils {
-    static SHIFT: &'static str = "  ";
-    pub fn string_join<T: std::string::ToString>(vals: &Vec<T>, sep: &str) -> String {
+    pub fn values_strings<T: std::string::ToString, F: Fn(&T) -> String>(vals: &Vec<T>, call: &F) -> Vec<String> {
         vals.iter().map(|v|{
-            v.to_string()
-        }).collect::<Vec<String>>().join(sep)
+            call(v)
+        }).collect::<Vec<String>>()
     }
-    pub fn sh(shift: usize) -> String {
-        SHIFT.repeat(shift)
-    }
+
     pub fn is_ident_string(val: &str) -> bool {
         val.chars().find(|c| {
             !(c.is_ascii_alphabetic() || c.is_digit(10) || *c == '_') 
@@ -24,8 +22,8 @@ mod utils {
 }
 
 trait ToSchemerString {
-    fn field_to(&self, shift: usize) -> String;
-    fn value_to(&self, shift: usize) -> String;
+    fn field_to(&self, format: &Formatting, shift: usize) -> String;
+    fn value_to(&self, format: &Formatting, shift: usize) -> String;
 }
 
 fn cast<T: ToSchemerString>(val: &T) -> &T {
@@ -33,50 +31,41 @@ fn cast<T: ToSchemerString>(val: &T) -> &T {
 }
 
 impl ToSchemerString for BooleanType {
-    fn field_to(&self, _: usize) -> String {
+    fn field_to(&self, _: &Formatting, _: usize) -> String {
         format!("boolean{}", 
             if self.is_array() { "[]" } else { "" }
         )
     }
-    fn value_to(&self, _: usize) -> String {
+    fn value_to(&self, format: &Formatting, shift: usize) -> String {
         match self.value() {
             PossibleArray::Array(arr) => {
-                format!("[{}]", &utils::string_join(&arr, ", "))
+                format!("[{}]", format.format_t_array(arr, shift + 1))
             },
             PossibleArray::Value(val) => {
-                format!("{}", val)
+                format.format_value(val)
             },
         }
     }
 }
 
 impl ToSchemerString for StringType {
-    fn field_to(&self, _: usize) -> String {
+    fn field_to(&self, format: &Formatting, shift: usize) -> String {
         let opt_enum = self.enum_values();
         let enum_string = match &opt_enum {
             Some(values) => {
-                format!(" enum {{{}}}",
-                    values.values()
-                        .iter().map(|x| {
-                            format!("\"{}\"", x)
-                        }).collect::<Vec<String>>().join(", ")
-                )
+                format!(" enum {{{}}}", format.format_t_array(values.values(), shift))
             },
             None => String::new(),
-        };        
+        };
         format!("string{}{}", 
             if self.is_array() { "[]" } else { "" },
             enum_string
         )
     }
-    fn value_to(&self, _: usize) -> String {
+    fn value_to(&self, format: &Formatting, shift: usize) -> String {
         match self.value() {
             PossibleArray::Array(arr) => {
-                if arr.len() > 0 {
-                    format!("[\"{}\"]", &utils::string_join(&arr, ", "))
-                } else {
-                    "[]".to_string()
-                }
+                format!("[{}]", format.format_t_array(&arr, shift + 1))
             },
             PossibleArray::Value(val) => {
                 format!("\"{}\"", val)
@@ -85,8 +74,8 @@ impl ToSchemerString for StringType {
     }
 }
 
-impl<T> ToSchemerString for NumberType<T> where T: Numeric, T: Clone {
-    fn field_to(&self, _: usize) -> String {
+impl<T> ToSchemerString for NumberType<T> where T: Numeric, T: Clone, T: format::ValueToString {
+    fn field_to(&self, format: &Formatting, shift: usize) -> String {
         let ival = self.interval();
         let interval = if ival.has_minmax() { 
             format!(" {}..{}", 
@@ -98,12 +87,8 @@ impl<T> ToSchemerString for NumberType<T> where T: Numeric, T: Clone {
         let opt_enum = self.enum_values();
         let enum_string = match &opt_enum {
             Some(values) => {
-                format!(" enum {{{}}}",
-                    values.values()
-                        .iter().map(|x| {
-                            x.to_string()
-                        }).collect::<Vec<String>>().join(", ")
-                )
+                format!(" enum {{{}}}", 
+                    format.format_t_array(values.values(), shift))
             },
             None => String::new(),
         };
@@ -114,10 +99,10 @@ impl<T> ToSchemerString for NumberType<T> where T: Numeric, T: Clone {
         )
     }
 
-    fn value_to(&self, _: usize) -> String {
+    fn value_to(&self, format: &Formatting, shift: usize) -> String {
         match self.value() {
             PossibleArray::Array(arr) => {
-                format!("[{}]", &utils::string_join(&arr, ", "))
+                format!("[{}]", format.format_t_array(&utils::values_strings(arr, &|v| v.to_string() ), shift + 1))
             },
             PossibleArray::Value(val) => {
                 val.to_string()
@@ -127,77 +112,65 @@ impl<T> ToSchemerString for NumberType<T> where T: Numeric, T: Clone {
 }
 
 impl ToSchemerString for ObjectType {
-    fn field_to(&self, shift: usize) -> String {
-        let fields = self.fields()
-            .iter()
-            .map(|(_, v)| {
-                field_to_string_impl(v, shift + 1)
-            }).collect::<Vec<String>>().join(",\n");
-        format!("object{} {{\n{}\n{}}}", 
+    fn field_to(&self, format: &Formatting, shift: usize) -> String {
+
+        let fields = format.format_array(
+            &self.fields().iter().map(|(_, f)| {
+                field_to_string_impl(f, format, shift + 1)
+            }).collect::<Vec<String>>(), 
+        shift);
+
+        format!("object{} {{{}}}", 
             if self.is_array() { "[]" } else { "" },
             fields,
-            utils::sh(shift)
         )
     }
-    fn value_to(&self, shift: usize) -> String {
+    fn value_to(&self, format: &Formatting, shift: usize) -> String {
         match self.value() {
             PossibleArray::Array(arr) => {
-                let values = (**arr)
-                .iter().map(|x| {
+                let values = (**arr).iter().map(|x| {
                     match &**x {
-                        Some(field) => cast(field).value_to(shift + 1),
+                        Some(field) => cast(field).value_to(format, shift + 1),
                         None => String::new(),
                     }
-                }).collect::<Vec<String>>().join(", ");
-                if values.len() == 0 {
-                    "[]".to_string()
-                } else {
-                    format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
-                }
+                }).collect::<Vec<String>>();
+                format!("[{}]", format.format_array(&values, shift))
             },
             PossibleArray::Value(val) => {
-                let str_value = match &**val {
+                let fields = match &**val {
                     Some(unboxed) => {
                         unboxed.fields()
                     },
                     None => self.fields(),
-                }.iter().map(|(_, v)| {
-                    values_to_string(v, shift + 1)
-                }).collect::<Vec<String>>().join(",\n");
-                if str_value.len() == 0 {
-                    "{}".to_string()
-                } else {
-                    format!("{{\n{}\n{}}}", &str_value, utils::sh(shift))
-                }
+                };
+                let str_value = fields.iter().map(|(_, v)| {
+                    values_to_string(v, format, shift + 1)
+                }).collect::<Vec<String>>();
+                format!("{{{}}}", format.format_array(&str_value, shift))
             },
         }
     }
 }
 
 impl ToSchemerString for AnyType {
-    fn field_to(&self, _: usize) -> String {
+    fn field_to(&self, _: &Formatting, _: usize) -> String {
         "any".to_string()
     }
-    fn value_to(&self, shift: usize) -> String {
+    fn value_to(&self, format: &Formatting, shift: usize) -> String {
         match self.value() {
             PossibleArray::Array(arr) => {
-                let values = (**arr)
-                .iter().map(|x| {
+                let values = (**arr).iter().map(|x| {
                     match &**x {
-                        Some(field) => cast(field).value_to(shift + 1),
+                        Some(field) => cast(field).value_to(format, shift + 1),
                         None => "null".to_string(),
                     }
-                }).collect::<Vec<String>>().join(", ");
-                if values.len() == 0 {
-                    "[]".to_string()
-                } else {
-                    format!("[\n{}{}\n{}]", utils::sh(shift + 1), values, utils::sh(shift))
-                }
+                }).collect::<Vec<String>>();
+                format!("[{}]", format.format_array(&values, shift))
             },
             PossibleArray::Value(val) => {
                 match &**val {
                     Some(unboxed) => {
-                        cast(unboxed).value_to(shift)
+                        cast(unboxed).value_to(format, shift)
                     },
                     None => "null".to_string(),
                 }
@@ -207,73 +180,73 @@ impl ToSchemerString for AnyType {
 }
 
 impl ToSchemerString for Element {
-    fn field_to(&self, shift: usize) -> String {
+    fn field_to(&self, format: &Formatting, shift: usize) -> String {
         match &self {
-            Element::Boolean(v) => { cast(v).field_to(shift) },
-            Element::String(v) => { cast(v).field_to(shift) },
-            Element::Integer(v) => { cast(v).field_to(shift) },
-            Element::Floating(v) => { cast(v).field_to(shift) },
-            Element::Object(v) => { cast(v).field_to(shift) },
-            Element::Any(v) => { cast(v).field_to(shift) },
+            Element::Boolean(v) => { cast(v).field_to(format, shift) },
+            Element::String(v) => { cast(v).field_to(format, shift) },
+            Element::Integer(v) => { cast(v).field_to(format, shift) },
+            Element::Floating(v) => { cast(v).field_to(format, shift) },
+            Element::Object(v) => { cast(v).field_to(format, shift) },
+            Element::Any(v) => { cast(v).field_to(format, shift) },
             Element::None => "".to_string(),
         }
     }
-    fn value_to(&self, shift: usize) -> String {
+    fn value_to(&self, format: &Formatting, shift: usize) -> String {
         match &self {
-            Element::Boolean(v) => { cast(v).value_to(shift) },
-            Element::String(v) => { cast(v).value_to(shift) },
-            Element::Integer(v) => { cast(v).value_to(shift) },
-            Element::Floating(v) => { cast(v).value_to(shift) },
-            Element::Object(v) => { cast(v).value_to(shift) },
-            Element::Any(v) => { cast(v).value_to(shift) },
+            Element::Boolean(v) => { cast(v).value_to(format, shift) },
+            Element::String(v) => { cast(v).value_to(format, shift) },
+            Element::Integer(v) => { cast(v).value_to(format, shift) },
+            Element::Floating(v) => { cast(v).value_to(format, shift) },
+            Element::Object(v) => { cast(v).value_to(format, shift) },
+            Element::Any(v) => { cast(v).value_to(format, shift) },
             Element::None => "null".to_string(),
         }
     }
 }
 
-fn field_values_to_string<T: ObjectBase + ToSchemerString>(val: &T, shift: usize, ignore_default: bool) -> String {
+fn field_values_to_string<T: ObjectBase + ToSchemerString>(val: &T, format: &Formatting, shift: usize, ignore_default: bool) -> String {
     if val.is_default() && !ignore_default {
-        format!("{}", val.field_to(shift))
+        format!("{}", val.field_to(format, shift))
     } else {
-        format!("{} = {}", val.field_to(shift), val.value_to(shift))
+        format!("{} = {}", val.field_to(format, shift), val.value_to(format, shift))
     }
 }
 
-fn options_to_string(opts: &Options, shift: usize) -> String {
+fn options_to_string(opts: &Options, format: &Formatting, shift: usize) -> String {
     if opts.empty() {
         String::new()
     } else {
-        format!("({})", opts.all()
-            .iter().map(|(k, v)|{
-                format!("{}: {}", k, cast(v).value_to(shift + 1))
-            }).collect::<Vec<String>>().join(", ")
-        )
+        let vals = opts.all().iter().map(|(k, v)|{
+            format!("{}: {}", k, cast(v).value_to(format, shift + 1))
+        }).collect::<Vec<String>>();
+        format!("({})", format.format_array(&vals, shift + 1))
     }
 }
 
-fn field_to_string_impl(val: &FieldType, shift: usize) -> String {
-    format!("{}{}{}: {}", utils::sh(shift), 
+fn field_to_string_impl(val: &FieldType, format: &Formatting, shift: usize) -> String {
+    format!("{}{}: {}", 
         &utils::quote(val.name()), 
-        &options_to_string(&val.options(), shift),
+        &options_to_string(&val.options(), format, shift),
         match val.value() {
-            Element::Boolean(v) => { field_values_to_string(v, shift, false) },
-            Element::String(v) => { field_values_to_string(v, shift, false) },
-            Element::Integer(v) => { field_values_to_string(v, shift, false) },
-            Element::Floating(v) => { field_values_to_string(v, shift, false) },
-            Element::Object(v) => { field_values_to_string(v, shift, false) },
-            Element::Any(v) => { field_values_to_string(v, shift, false) },
+            Element::Boolean(v) => { field_values_to_string(v, format, shift, false) },
+            Element::String(v) => { field_values_to_string(v, format, shift, false) },
+            Element::Integer(v) => { field_values_to_string(v, format, shift, false) },
+            Element::Floating(v) => { field_values_to_string(v, format, shift, false) },
+            Element::Object(v) => { field_values_to_string(v, format, shift, false) },
+            Element::Any(v) => { field_values_to_string(v, format, shift, false) },
             Element::None => "".to_string(),
         }
     )
 }
 
-fn values_to_string(val: &FieldType, shift: usize) -> String {
-    format!("{}{}: {}", utils::sh(shift), 
+fn values_to_string(val: &FieldType, format: &Formatting, shift: usize) -> String {
+    format!("{}: {}", 
         utils::quote(val.name()),
-        cast(val.value()).value_to(shift)
+        cast(val.value()).value_to(format, shift)
     )
 }
 
 pub fn field_to_string(val: &FieldType) -> String {
-    field_to_string_impl(val, 0)
+    let format = Formatting::new(2);
+    field_to_string_impl(val, &format, 0)
 }
