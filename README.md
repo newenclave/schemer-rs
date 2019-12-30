@@ -37,7 +37,7 @@ Here:
 ### To run
 
 ```bash
-$ ./schemer <path_to_schemer_file> [json_value | json_schema | schemer]
+$ ./schemer <path_to_schemer_file> [[json_value | json_schema | schemer] <shift_value: 1, 2, 3, 4...>]
 ```
 
 ### Examples?

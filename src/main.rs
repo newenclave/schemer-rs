@@ -72,7 +72,15 @@ fn main() {
         }
     } else {
         let v = "
-        main: object {s: string enum {\"one\",\"two\",\"three\"} = \"one\",i: integer enum {1,3,5,7,9} = 3,f: floating enum {0.5,1,1.5} = 0.5}
+        main: object {
+          i: object {
+            a: any = {
+              b: true
+            }
+          } = {
+            a = [{}, {}, true, false]
+          }
+        }
         ".to_owned();
 
       parse_format(&v, &show_in_schemer, 2);

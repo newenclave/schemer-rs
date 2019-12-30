@@ -62,7 +62,9 @@ mod helpers {
         fn set_max(&mut self, parser: &mut Parser) {
             let sign = read_sign(parser) as i64;
             match &parser.current().token() {
-                Token::Integer(val) => self.set_max(*val * sign),
+                Token::Integer(val) => {
+                    self.set_max(*val * sign)
+                },
                 _ => (),
             }
         }
@@ -294,9 +296,9 @@ mod helpers {
                                 next.add_field(FieldType::new(field_name, Element::Object(val), opts));
                             },
                             Element::Any(_) => { 
-                                // let mut val = create_same_object(v);
-                                // parser.read_value(&mut val);
-                                // next.add_field(FieldType::new(field_name, Element::Any(val), opts));
+                                parser.advance();
+                                let val = parser.guess_element()?;
+                                next.add_field(FieldType::new(field_name, val, opts));
                             },
                         }
                     },
