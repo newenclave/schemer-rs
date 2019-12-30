@@ -1,6 +1,6 @@
 
 use std::collections::HashMap;
-use super::scanner::Scanner as StrScanner;
+use super::scanner::Scanner;
 
 pub struct Trie<T> {
     data: Option<T>,
@@ -16,7 +16,7 @@ impl<T> Trie<T> {
         }
     }
 
-    pub fn get<'a, 'b>(&'a self, data: &'b mut StrScanner) -> Option<(&'a T, usize)> {
+    pub fn get<'a, 'b>(&'a self, data: &'b mut Scanner) -> Option<(&'a T, usize)> {
         let mut root = self;
         let mut last: Option<&T> = None;
         let mut last_shift: usize = 0;

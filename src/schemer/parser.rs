@@ -2,6 +2,7 @@
 use super::tokens::{TokenInfo, Token, SpecialToken, TypeName};
 use super::objects::*;
 use super::object_base::*;
+use super::environment::{Environment};
 
 struct ParserState {
     current: usize,
@@ -29,6 +30,7 @@ pub struct Parser {
     current: usize,
     next: usize,
     eof_token: TokenInfo, 
+    env: Environment,
 }
 
 mod helpers {
@@ -327,6 +329,7 @@ impl Parser {
             current: 0,
             next: if len == 0 { 0 } else { 1 },
             eof_token: TokenInfo::new(Token::Eof, (len, len)),
+            env: Environment::new()
         }
     }
 

@@ -340,8 +340,8 @@ impl Element {
 pub struct Options {
     values: HashMap<String, Element>
 }
-impl Options {
 
+impl Options {
     pub fn new() -> Options {
         Options {
             values: HashMap::new(),

@@ -10,3 +10,4 @@ pub mod object_base;
 pub mod to_schemer;
 pub mod to_json;
 pub mod formatting;
+pub mod environment;
