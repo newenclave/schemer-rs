@@ -56,8 +56,8 @@ fn main() {
             def_shift = match args[3].parse::<usize>() {
                 Ok(val) => val,
                 Err(err) => {
-                    eprintln!("Invalid shift value '{}'. Error: {}", args[2], err);
-                    2
+                    eprintln!("Invalid shift value '{}'. Error: {}", args[3], err);
+                    return ();
                 },
             }
         }
