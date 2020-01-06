@@ -395,12 +395,12 @@ It's possible to define aliases for any type supported.
 mod examples.rule
 
 # aliases are just types definitions.
-# you can also specify defauls for the type defined with "alias"
+# you can also specify defaults for the type defined with "alias"
 
-alias rule_type: string enum {
+alias rule_type: string enum { # string enum with default = "skip"
   "skip", "allow", "deny"
 }
-alias weight: integer 1..10 = 5 
+alias weight: integer 1..10 = 5 # integer interval with default = 5
 alias rule: object {
   name: string,
   type: rule_type = "skip"
