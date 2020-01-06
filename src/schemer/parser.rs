@@ -142,7 +142,7 @@ mod helpers {
             match parser.current().token() {
                 Token::String(val) => {
                     if !self.check_enum(val) {
-                        return Err(parser.panic_current(&format!("Value '{}' is not valis for enum.", val)));
+                        return Err(parser.panic_current(&format!("Value '{}' is invalid for enum.", val)));
                     }
                     Ok(self.add_value(val))
                 },
@@ -483,6 +483,21 @@ impl Parser {
         Ok(())
     }
 
+    fn read_element_value(&mut self, output: &mut Element) -> Result<(), ParserError> {
+        match output {
+            Element::Boolean(v) => { self.read_value(v) },
+            Element::String(v) => { self.read_value(v) },
+            Element::Integer(v) => { self.read_value(v) },
+            Element::Floating(v) => { self.read_value(v) },
+            Element::Object(v) => { self.read_value(v) },
+            Element::Any(v) => {
+                *v = self.parse_any()?;
+                Ok(())
+            },
+            Element::None => Err(self.panic_current("no object")),
+        } 
+    }
+
     fn try_read_array<T: helpers::ValueReadCheck>(&mut self, output: &mut T) -> Result<(), ParserError> {
         while self.expect(&T::token_checker) {
             output.read_value(self)?;
@@ -678,6 +693,17 @@ impl Parser {
                 TypeName::TypeObject => Element::Object(self.parse_object()?),
                 TypeName::TypeAny => Element::Any(self.parse_any()?),
             },
+            Token::Ident(name)
+            | Token::String(name) => {
+                match self.env.get_alias(name) {
+                    Some(element) => { 
+                        let mut val = element.clone();
+                        self.read_element_value(&mut val)?;
+                        val
+                    },
+                    _ => { return Err(self.panic_current("should be a typename")); }
+                }
+            }
             _ => { return Err(self.panic_current("should be a typename")); }
         };
         Ok(FieldType::new(name, element, opts))
@@ -713,6 +739,11 @@ impl Parser {
                 | Token::String(_) => {
                     let fld = self.parse_field()?;
                     res.add_field(fld);
+                },
+                Token::Special(SpecialToken::Alias) => {
+                    self.advance();
+                    let mut fld = self.parse_field()?;
+                    self.env.set_alias(fld.name(), fld.value().clone());
                 },
                 Token::Eof => break,
                 _ => return Err(self.panic_expect("name, alias")),

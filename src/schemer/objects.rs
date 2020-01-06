@@ -384,7 +384,7 @@ impl FieldType {
             opts: opts,
         }
     }
-    pub fn value<'a>(&'a self) -> &'a Element {
+    pub fn value(&self) -> &Element {
         return &self.value
     }
     pub fn name(&self) -> &str {

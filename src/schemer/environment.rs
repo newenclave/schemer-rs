@@ -19,4 +19,7 @@ impl Environment {
     pub fn has_alias(&self, k: &str) -> bool {
         self.aliases.get(k).is_some()
     }
+    pub fn get_alias(&self, k: &str) -> Option<&Element> {
+        self.aliases.get(k)
+    }
 }

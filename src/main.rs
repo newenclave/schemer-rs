@@ -79,11 +79,15 @@ fn main() {
     } else {
         let v = "
         mod a.b.c
+        alias test: object {b: integer = 100} 
+        alias test_s: string enum { \"1\", \"2\", \"3\", \"4\",  }
         main: object {
           i: object {
             a: any = {
               b: true
             }
+            t: test = {a: true}
+            ts: test_s = \"100\"
           } = {
             a: { b: [1, 2, 3] },
           }

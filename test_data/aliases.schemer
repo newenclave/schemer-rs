@@ -1,0 +1,30 @@
+mod test
+
+alias str_enum: string enum {
+    "none", "var1", "var2", "var3",
+}
+
+alias int_enum: integer enum {
+    -1, 0, 1
+}
+
+alias float_enum: floating enum {
+    0.5, 1, 1.5, 5
+}
+
+alias obj_alias: object {
+    s: str_enum = "var1"
+}
+
+alias int_interval: integer 0..100
+
+main: object {
+    o: obj_alias = { addition: "this is an addition field!" },
+    f: float_enum = 1,
+    i: int_enum = 0,
+    s: str_enum = "none"
+    s2: str_enum = "var2"
+    i1: int_interval = 0
+    i2: int_interval = 50
+    i3: int_interval = 100
+}

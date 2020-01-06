@@ -28,7 +28,7 @@ pub enum SpecialToken {
     Interval, // ..
 
     Mod, // mod
-    Alias, // 
+    Alias, // alias
 }
 
 #[derive(Clone, PartialEq)]

@@ -55,7 +55,7 @@ mod helpers {
             scan.advance();
         }
     
-        let mut found: bool = false;
+        let mut found = false;
         let scan_bu = scan.backup(); 
     
         if scan.top() == '.' {
