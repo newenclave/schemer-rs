@@ -93,7 +93,7 @@ pub mod format {
                 format!("[{}]",
                     format.format_array(&arr.iter().map(|v| {
                         (v as &dyn ValueToString).convert()
-                    }).collect::<Vec<String>>(), shift)
+                    }).collect::<Vec<String>>(), shift + 1)
                 )
             },
         }
@@ -110,13 +110,13 @@ pub mod format {
                 }.iter().map(|(k, v)| {
                     format!("\"{}\": {}", k, element_format_impl(v.value(), format, shift + 1))
                 }).collect::<Vec<String>>();
-                format!("{{{}}}", format.format_array(&str_value, shift + 1))
+                format!("{{{}}}", format.format_array(&str_value, shift))
             },
             PossibleArray::Array(arr) => {
                 let str_value = (**arr)
                 .iter().map(|x| {
                     match &**x {
-                        Some(field) => object_format(field, format, shift),
+                        Some(field) => object_format(field, format, shift + 1),
                         None => String::new(),
                     }
                 }).collect::<Vec<String>>();
