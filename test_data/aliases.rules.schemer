@@ -1,0 +1,23 @@
+mod examples.rule
+
+alias rule_type: string enum { "skip", "allow", "deny" }
+alias weight: integer 1..10 = 5
+alias rule: object {
+  name: string,
+  type: rule_type = "skip"
+}
+
+rules: object[] {
+  enabled: boolean = false
+  w: weight 
+  r: rule
+} = [
+    {
+        "enabled": true,
+        "w": 10,
+        "r": {
+            "name": "deny any",
+            "type": "deny"
+        }
+    }
+]
