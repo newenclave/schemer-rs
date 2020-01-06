@@ -62,7 +62,7 @@ main: object {
 
 output json_schema:
 
-```js
+```json
 {
   "properties": {
     "i": {
@@ -84,7 +84,7 @@ output json_schema:
 
 output json_value:
 
-```js
+```json
 {
   "f": 0,
   "s": ["Hello", "World!"],
@@ -144,7 +144,7 @@ main: object {
 
 json_schema output:
 
-```js
+```json
 {
   "properties": {
     "i": {
@@ -166,7 +166,7 @@ json_schema output:
 
 json_value output:
 
-```js
+```json
 {
   "s": "one",
   "i": 1,
@@ -191,7 +191,7 @@ root: object {
 
 json_schema:
 
-```js
+```json
 {
   "required": ["flag"],
   "type": "object",
@@ -236,7 +236,7 @@ json_schema:
 
 json vaue:
 
-```js
+```json
 {
   "sro": "",
   "iro": 0,
@@ -288,7 +288,7 @@ main: object {
 
 schema:
 
-```js
+```json
 {
   "type": "object",
   "properties": {
@@ -357,7 +357,7 @@ schema:
 
 value:
 
-```js
+```json
 {
   "any_string": "this is an any string",
   "any_float": 10.5,
@@ -387,6 +387,100 @@ value:
 }
 ```
 
+Aliases
+
+It's possible to define aliases for any type supported.
+
+```schemer
+mod examples.rule
+
+# aliases are just types definitions.
+# you can also specify defauls for the type defined with "alias"
+
+alias rule_type: string enum {
+  "skip", "allow", "deny"
+}
+alias weight: integer 1..10 = 5 
+alias rule: object {
+  name: string,
+  type: rule_type = "skip"
+}
+
+rules: object[] {
+  enabled: boolean = false
+  w: weight
+  r: rule
+} = [
+    {
+        "enabled": true,
+        "w": 10,
+        "r": {
+            "name": "deny any",
+            "type": "deny"
+        }
+    }
+]
+```
+
+json_schema: 
+
+```json
+{ 
+   "properties":{ 
+      "rules":{ 
+         "type":"array",
+         "items":{ 
+            "properties":{ 
+               "w":{ 
+                  "type":"integer",
+                  "maximum":10,
+                  "minimum":1
+               },
+               "r":{ 
+                  "type":"object",
+                  "properties":{ 
+                     "type":{ 
+                        "enum":[ 
+                           "skip",
+                           "allow",
+                           "deny"
+                        ],
+                        "type":"string"
+                     },
+                     "name":{ 
+                        "type":"string"
+                     }
+                  }
+               },
+               "enabled":{ 
+                  "type":"boolean"
+               }
+            },
+            "type":"object"
+         }
+      }
+   },
+   "type":"object"
+}
+```
+
+json_value:
+
+```json
+{ 
+   "rules":[ 
+      { 
+         "w":10,
+         "enabled":true,
+         "r":{ 
+            "type":"deny",
+            "name":"deny any"
+         }
+      }
+   ]
+}
+```
+
 Also i'm gonna add examples. See `test_data` directory.
 
 #### Thanks 
@@ -403,3 +497,4 @@ To all users of https://t.me/rust_beginners_ru
 - [x] adding json generators for `any`
 - [x] adding negative numbers
 - [ ] removing all copy-paste
+- [?] aliases
