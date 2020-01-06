@@ -387,7 +387,7 @@ value:
 }
 ```
 
-Aliases
+#### Aliases
 
 It's possible to define aliases for any type supported.
 
