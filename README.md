@@ -174,7 +174,7 @@ json_value output:
 }
 ```
 
-Optopns:
+Options:
 
 ```schemer
 root: object {
